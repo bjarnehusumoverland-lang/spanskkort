@@ -49,7 +49,10 @@ Alt er relative stier, så appen kan legges rett på GitHub Pages, Netlify e.l.
 ## Struktur
 
 ```
-index.html            – appskall
+index.html            – julelandingsside (forsiden)
+css/landing.css       – landingssidens design (vinterkveld, snø, lysslynge)
+assets/familie.jpg    – forsidebildet
+app.html              – appskall
 css/style.css         – design (Fraunces + Inter, varm papir-palett)
 js/app.js             – all logikk (kortstokk, varsler, ics, tilstand)
 js/data/{b1,b2,c1,c2}.js – 4 × 100 kort

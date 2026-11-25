@@ -3,59 +3,339 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#F7F2E9">
-  <meta name="color-scheme" content="light">
-  <meta name="description" content="Spanske samtalekort for to – B1 til C2. Trekk et kort, ta en kaffe, og snakk spansk sammen.">
-  <title>Sobremesa · spanske samtalekort</title>
+  <meta name="theme-color" content="#192433">
+  <meta name="description" content="Sobremesa – 400 spanske samtalekort for to. Trekk et kort, tenn et lys, og la julens lengste prat vare litt lenger.">
+  <title>Sobremesa · god jul og god prat</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Sobremesa">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
 
-  <header class="top">
-    <div class="wordmark">
-      <span class="wordmark-name">Sobremesa</span>
-      <span class="wordmark-sub">spanske samtalekort</span>
+<header class="hero">
+  <canvas id="snow" aria-hidden="true"></canvas>
+
+  <!-- Lysslynge -->
+  <svg class="lights" viewBox="0 0 1200 150" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M-20,8 C300,135 900,135 1220,8" fill="none" stroke="#0e1620" stroke-width="2.5" opacity="0.9"/>
+    <g class="bulbs">
+      <g transform="translate(80,38)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb gold b-a"/></g>
+      <g transform="translate(190,66)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb red b-b"/></g>
+      <g transform="translate(300,86)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb cream b-a"/></g>
+      <g transform="translate(410,98)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb gold b-b"/></g>
+      <g transform="translate(520,103)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb red b-a"/></g>
+      <g transform="translate(630,103)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb cream b-b"/></g>
+      <g transform="translate(740,98)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb gold b-a"/></g>
+      <g transform="translate(850,86)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb red b-b"/></g>
+      <g transform="translate(960,66)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb cream b-a"/></g>
+      <g transform="translate(1070,40)"><rect x="-3" y="-2" width="6" height="7" rx="2" fill="#243245"/><circle cy="13" r="7" class="bulb gold b-b"/></g>
+    </g>
+  </svg>
+
+  <div class="hero-inner">
+    <div class="hero-mark">
+      <span class="hero-name">Sobremesa</span>
+      <span class="hero-sub">Spanske samtalekort · jule&shy;utgaven</span>
     </div>
-    <div class="streak" id="streak" hidden></div>
-  </header>
 
-  <main id="view" class="view"></main>
+    <h1 class="hero-title">Jula er én lang <em>sobremesa</em>.</h1>
+    <p class="hero-lead">Trekk et kort, tenn lysene, og bli sittende.<br>400 spanske samtalekort for praten som blir igjen rundt bordet.</p>
 
-  <nav class="tabs" aria-label="Hovedmeny">
-    <button class="tab" data-tab="deck" aria-label="Kort">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="3.5" width="13" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 8h6M9 12h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      <span>Kort</span>
-    </button>
-    <button class="tab" data-tab="daily" aria-label="Dagens kort">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span>Dagens</span>
-    </button>
-    <button class="tab" data-tab="favs" aria-label="Favoritter">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.6-7-10a4.1 4.1 0 0 1 7-2.9A4.1 4.1 0 0 1 19 10c0 5.4-7 10-7 10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-      <span>Favoritter</span>
-    </button>
-    <button class="tab" data-tab="settings" aria-label="Innstillinger">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2.1 2.1M15.9 15.9 18 18M18 6l-2.1 2.1M8.1 15.9 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      <span>Mer</span>
-    </button>
-  </nav>
+    <!-- Fotografi i juleramme: utklipte personer i illustrert vinterkveld -->
+    <figure class="polaroid">
+      <div class="photo scene">
+        <svg class="scene-bg" viewBox="0 0 1938 1090" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#101A29"/>
+              <stop offset="0.55" stop-color="#1C2A42"/>
+              <stop offset="0.82" stop-color="#2C3E5A"/>
+              <stop offset="1" stop-color="#3A4A66"/>
+            </linearGradient>
+            <radialGradient id="moonglow">
+              <stop offset="0" stop-color="rgba(242,231,205,0.45)"/>
+              <stop offset="1" stop-color="rgba(242,231,205,0)"/>
+            </radialGradient>
+            <radialGradient id="winglow">
+              <stop offset="0" stop-color="rgba(242,178,75,0.55)"/>
+              <stop offset="1" stop-color="rgba(242,178,75,0)"/>
+            </radialGradient>
+          </defs>
+          <rect width="1938" height="1090" fill="url(#sky)"/>
+          <g fill="#EAE4D2">
+            <circle cx="150" cy="120" r="4"/><circle cx="340" cy="60" r="3" opacity="0.7"/><circle cx="520" cy="170" r="3.5"/>
+            <circle cx="700" cy="80" r="3" opacity="0.6"/><circle cx="930" cy="140" r="4" opacity="0.8"/><circle cx="1090" cy="50" r="3"/>
+            <circle cx="1420" cy="90" r="3.5" opacity="0.7"/><circle cx="1540" cy="260" r="3"/><circle cx="1810" cy="330" r="3.5" opacity="0.8"/>
+            <circle cx="250" cy="300" r="3" opacity="0.6"/><circle cx="440" cy="390" r="3.5" opacity="0.7"/><circle cx="80" cy="470" r="3" opacity="0.5"/>
+            <circle cx="1880" cy="140" r="3" opacity="0.6"/><circle cx="1700" cy="420" r="3" opacity="0.5"/><circle cx="600" cy="280" r="2.5" opacity="0.5"/>
+          </g>
+          <circle cx="1690" cy="165" r="200" fill="url(#moonglow)"/>
+          <circle cx="1690" cy="165" r="64" fill="#F2E7CD"/>
+          <circle cx="1668" cy="150" r="11" fill="#E2D3B2" opacity="0.7"/>
+          <circle cx="1706" cy="186" r="7" fill="#E2D3B2" opacity="0.6"/>
+          <!-- åser -->
+          <path d="M0,660 C300,580 700,620 1100,575 C1400,545 1700,600 1938,555 L1938,1090 L0,1090 Z" fill="#223147"/>
+          <path d="M0,780 C350,705 800,755 1200,715 C1500,685 1750,735 1938,705 L1938,1090 L0,1090 Z" fill="#1B2838"/>
+          <!-- grantrær -->
+          <g fill="#13202C">
+            <path d="M85,585 l52,130 h-104 Z"/><path d="M85,640 l62,150 h-124 Z"/><rect x="77" y="780" width="16" height="30"/>
+            <path d="M1835,545 l56,140 h-112 Z"/><path d="M1835,605 l66,160 h-132 Z"/><rect x="1826" y="755" width="18" height="34"/>
+            <path d="M1718,600 l44,110 h-88 Z"/><path d="M1718,648 l52,126 h-104 Z"/>
+          </g>
+          <!-- hytte med lys i vinduene -->
+          <g transform="translate(170,520)">
+            <circle cx="62" cy="137" r="86" fill="url(#winglow)"/>
+            <circle cx="198" cy="137" r="86" fill="url(#winglow)"/>
+            <rect x="0" y="60" width="260" height="155" fill="#241B13"/>
+            <path d="M-22,70 L130,-14 L282,70 Z" fill="#191210"/>
+            <path d="M-14,60 L130,-20 L274,60" fill="none" stroke="#D8E2EF" stroke-width="17" stroke-linecap="round"/>
+            <rect x="192" y="-4" width="36" height="46" fill="#2A2019"/>
+            <rect x="186" y="-14" width="48" height="12" rx="5" fill="#D8E2EF"/>
+            <path class="smoke sm1" d="M210,-22 C202,-46 222,-60 212,-86" stroke="#B9C4D6" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <rect x="40" y="108" width="44" height="58" rx="4" fill="#F2B24B"/>
+            <rect x="176" y="108" width="44" height="58" rx="4" fill="#F2B24B"/>
+            <path d="M62,108 V166 M40,137 H84 M198,108 V166 M176,137 H220" stroke="#3A2B1C" stroke-width="5"/>
+            <ellipse cx="130" cy="236" rx="190" ry="26" fill="rgba(242,178,75,0.14)"/>
+          </g>
+          <!-- snø -->
+          <path d="M0,830 C300,785 600,840 900,818 C1250,795 1600,845 1938,805 L1938,1090 L0,1090 Z" fill="#9FB4CE"/>
+          <path d="M0,955 C400,905 900,985 1400,935 C1700,910 1850,955 1938,935 L1938,1090 L0,1090 Z" fill="#BCCDE2"/>
+          <g fill="#E8F0F8" opacity="0.8">
+            <circle cx="300" cy="880" r="4"/><circle cx="640" cy="915" r="3.5"/><circle cx="1500" cy="895" r="4"/><circle cx="1750" cy="990" r="3.5"/>
+          </g>
+        </svg>
+        <img class="people" src="assets/familie-utklipp.png" alt="Mamma og pappa med nisseluer i en illustrert vinterkveld">
+        <svg class="hats" viewBox="0 0 1938 1090" aria-hidden="true">
+          <defs>
+            <g id="lue">
+              <path d="M-95,-8 C-85,-62 -35,-88 5,-84 C60,-79 100,-56 128,-32 C155,-16 175,-6 190,4 C165,16 135,8 100,-4 L96,-6 Z" fill="#C2402A"/>
+              <path d="M-60,-56 C-10,-72 60,-60 122,-28 C82,-40 20,-48 -38,-44 Z" fill="#A5331F" opacity="0.85"/>
+              <circle cx="196" cy="10" r="22" fill="#F2EADA"/>
+              <circle cx="190" cy="4" r="8" fill="#FFF8EA"/>
+              <g fill="#F2EADA">
+                <rect x="-106" y="-17" width="212" height="34" rx="17"/>
+                <circle cx="-85" cy="0" r="18"/><circle cx="-43" cy="2" r="19"/><circle cx="0" cy="-1" r="19"/>
+                <circle cx="43" cy="2" r="19"/><circle cx="85" cy="0" r="18"/>
+              </g>
+            </g>
+          </defs>
+          <use href="#lue" transform="translate(1234,164) rotate(-8) scale(1.55)"/>
+          <use href="#lue" transform="translate(830,388) scale(-1.4,1.4) rotate(-8)"/>
+        </svg>
+      </div>
+      <figcaption lang="es">Feliz Navidad — la sobremesa empieza aquí</figcaption>
+      <svg class="sprig" viewBox="0 0 120 120" aria-hidden="true">
+        <g stroke="#3E5641" stroke-width="3" stroke-linecap="round" fill="none">
+          <path d="M20,100 C45,70 70,45 100,22"/>
+          <path d="M38,82 l-16,-7 M38,82 l5,-17 M56,64 l-17,-6 M56,64 l6,-17 M74,46 l-16,-6 M74,46 l6,-16 M90,32 l-13,-5 M90,32 l5,-13"/>
+        </g>
+        <g fill="#B5402B">
+          <circle cx="30" cy="97" r="7"/><circle cx="44" cy="104" r="6"/><circle cx="42" cy="90" r="5"/>
+        </g>
+        <g fill="#8C2F1F"><circle cx="33" cy="94" r="1.6"/><circle cx="46" cy="101" r="1.4"/><circle cx="44" cy="88" r="1.2"/></g>
+      </svg>
+    </figure>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <div id="overlay-root"></div>
+    <button class="cta js-install" type="button">Last ned appen</button>
+    <a class="cta-soft" href="app.html">Eller prøv rett i nettleseren →</a>
+  </div>
 
-  <script src="js/data/b1.js"></script>
-  <script src="js/data/b2.js"></script>
-  <script src="js/data/c1.js"></script>
-  <script src="js/data/c2.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Bordet -->
+  <div class="table-band">
+    <svg class="table-scene" viewBox="0 0 420 110" aria-hidden="true">
+      <!-- kortstokk -->
+      <g transform="translate(60,52) rotate(-8)">
+        <rect x="-21" y="-28" width="42" height="56" rx="6" fill="#A8431F"/>
+      </g>
+      <g transform="translate(72,50) rotate(4)">
+        <rect x="-21" y="-28" width="42" height="56" rx="6" fill="#BE4B23"/>
+        <text x="0" y="12" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="30" fill="#FBF6EC">¿?</text>
+      </g>
+      <!-- stearinlys -->
+      <g transform="translate(180,30)">
+        <rect x="-9" y="20" width="18" height="52" rx="4" fill="#F2E7D3"/>
+        <rect x="-1.4" y="12" width="2.8" height="9" fill="#6b5b45"/>
+        <ellipse class="flame" cx="0" cy="6" rx="5.5" ry="10" fill="#F6C560"/>
+        <ellipse class="flame" cx="0" cy="8" rx="2.6" ry="5" fill="#FBE6B2"/>
+      </g>
+      <!-- gløggkopper -->
+      <g transform="translate(290,56)">
+        <path class="steam s1" d="M0,-14 C-6,-26 6,-34 0,-48" stroke="#F2E7D3" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <rect x="-20" y="-12" width="40" height="34" rx="8" fill="#BE4B23"/>
+        <path d="M20,-4 a10,10 0 0 1 0,20" stroke="#BE4B23" stroke-width="6" fill="none"/>
+      </g>
+      <g transform="translate(352,62)">
+        <path class="steam s2" d="M0,-12 C6,-24 -6,-32 0,-44" stroke="#F2E7D3" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <rect x="-16" y="-10" width="32" height="28" rx="7" fill="#F2E7D3"/>
+        <path d="M16,-3 a8,8 0 0 1 0,16" stroke="#F2E7D3" stroke-width="5" fill="none"/>
+      </g>
+    </svg>
+  </div>
+</header>
+
+<main id="mer" class="below">
+  <section class="intro">
+    <h2>Praten som blir igjen rundt bordet</h2>
+    <p><i>Sobremesa</i> er det spanske ordet for tiden etter maten – når ingen har det travelt,
+    kaffen blir kald og praten blir god. Denne appen er laget for akkurat det øyeblikket:
+    to mennesker, ett kort, og en samtale på spansk.</p>
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <svg class="f-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <g transform="translate(29,33) rotate(-11)"><rect x="-15" y="-21" width="30" height="42" rx="5" fill="#3E5641"/></g>
+        <g transform="translate(35,32) rotate(7)">
+          <rect x="-15" y="-21" width="30" height="42" rx="5" fill="#BE4B23"/>
+          <text x="0" y="9" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="21" fill="#FBF6EC">¿?</text>
+        </g>
+      </svg>
+      <h3>400 kort for to</h3>
+      <p>100 kort på hvert nivå fra B1 til C2 – med oppfølgingsspørsmål, gloser på norsk og en liten utfordring på hvert kort.</p>
+    </div>
+    <div class="feature">
+      <svg class="f-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <path class="fi-steam fs1" d="M25,22 C21,16 29,13 26,6" stroke="#B9A77F" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path class="fi-steam fs2" d="M37,22 C41,16 33,13 36,6" stroke="#B9A77F" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <rect x="15" y="27" width="32" height="26" rx="7" fill="#BE4B23"/>
+        <path d="M47,32 a8,8 0 0 1 0,16" stroke="#BE4B23" stroke-width="5" fill="none"/>
+        <ellipse cx="31" cy="57" rx="19" ry="3.2" fill="#E0D2B4"/>
+      </svg>
+      <h3>Dagens kort</h3>
+      <p>Ett felles kort hver dag – perfekt til frokostkaffen, gløggen eller kvelden ved peisen.</p>
+    </div>
+    <div class="feature">
+      <svg class="f-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <g class="fi-bell">
+          <path d="M32,12 C22.5,12 18.5,19.5 18.5,28 C18.5,37 15.5,41 12.5,44 L51.5,44 C48.5,41 45.5,37 45.5,28 C45.5,19.5 41.5,12 32,12 Z" fill="#E3A93C"/>
+          <path d="M32,12 C22.5,12 18.5,19.5 18.5,28 C18.5,37 15.5,41 12.5,44 L22,44 C24,40 25,35 25,28 C25,20 27,14 32,12 Z" fill="#CE9226"/>
+          <circle cx="32" cy="48.5" r="4.4" fill="#8C6B2A"/>
+        </g>
+        <path d="M32,9 C28,4 21,5 23,10 C24.5,13 29,12 32,9 Z" fill="#B5402B"/>
+        <path d="M32,9 C36,4 43,5 41,10 C39.5,13 35,12 32,9 Z" fill="#B5402B"/>
+        <circle cx="32" cy="9" r="2.6" fill="#8C2F1F"/>
+      </svg>
+      <h3>Når dere vil</h3>
+      <p>Velg klokkeslett og ukedager, så sier appen fra når et nytt kort venter. Eller legg påminnelsen rett i kalenderen.</p>
+    </div>
+  </section>
+
+  <section class="quote">
+    <blockquote lang="es">«Las mejores conversaciones nunca tienen prisa.»</blockquote>
+    <p class="quote-no">– De beste samtalene har aldri dårlig tid.</p>
+  </section>
+
+  <div class="bottom-cta">
+    <button class="cta js-install" type="button">Last ned appen</button>
+    <p class="bottom-note"><a class="note-link" href="app.html">Eller åpne kortene i nettleseren →</a></p>
+    <p class="bottom-note">Gratis · uten pålogging · fungerer uten nett</p>
+  </div>
+
+  <footer class="foot">
+    <i>Sobremesa</i> · 400 spanske samtalekort · B1–C2 · Laget med kjærlighet, til bruk rundt et bord
+  </footer>
+</main>
+
+<div class="sheet-backdrop" id="install-sheet" hidden>
+  <div class="sheet" role="dialog" aria-label="Slik laster du ned appen">
+    <h3>Legg Sobremesa på hjemskjermen</h3>
+    <ol class="steps" id="steps-ios" hidden>
+      <li>Trykk på <strong>Del-knappen</strong>
+        <svg class="share-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M12 3l-4.5 4.5M12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 11.5v8a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        nederst i Safari</li>
+      <li>Bla ned og velg <strong>«Legg til på Hjem-skjerm»</strong></li>
+      <li>Trykk <strong>«Legg til»</strong> – ferdig! Appen ligger nå som et eget ikon</li>
+    </ol>
+    <ol class="steps" id="steps-other" hidden>
+      <li>Åpne nettleserens meny <strong>(⋮ eller ⋯)</strong></li>
+      <li>Velg <strong>«Installer app»</strong> eller <strong>«Legg til på startsiden»</strong></li>
+      <li>Bekreft – appen ligger nå som et eget ikon</li>
+    </ol>
+    <p class="sheet-note">Appen er gratis, bruker ikke pålogging og fungerer uten nett.</p>
+    <button class="cta sheet-close" id="sheet-close" type="button">Den er grei</button>
+  </div>
+</div>
+
+<script>
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
+
+  /* «Last ned appen» – ekte installasjon der det støttes, ellers veiledning */
+  (function () {
+    var deferred = null;
+    var buttons = [].slice.call(document.querySelectorAll(".js-install"));
+    var sheet = document.getElementById("install-sheet");
+
+    addEventListener("beforeinstallprompt", function (e) {
+      e.preventDefault();
+      deferred = e;
+    });
+
+    function markInstalled() {
+      buttons.forEach(function (b) { b.textContent = "Installert ✓"; });
+    }
+    addEventListener("appinstalled", markInstalled);
+
+    function isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    }
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (matchMedia("(display-mode: standalone)").matches) {
+          location.href = "app.html";
+          return;
+        }
+        if (deferred) {
+          deferred.prompt();
+          deferred.userChoice.then(function (r) {
+            if (r.outcome === "accepted") markInstalled();
+            deferred = null;
+          });
+          return;
+        }
+        var ios = isIOS();
+        document.getElementById("steps-ios").hidden = !ios;
+        document.getElementById("steps-other").hidden = ios;
+        sheet.hidden = false;
+      });
+    });
+
+    document.getElementById("sheet-close").addEventListener("click", function () { sheet.hidden = true; });
+    sheet.addEventListener("click", function (e) { if (e.target === sheet) sheet.hidden = true; });
+  })();
+
+  (function () {
+    var c = document.getElementById("snow");
+    if (!c || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var x = c.getContext("2d"), dpr = Math.min(devicePixelRatio || 1, 2), W, H;
+    function size() { W = c.width = c.offsetWidth * dpr; H = c.height = c.offsetHeight * dpr; }
+    size();
+    addEventListener("resize", size);
+    var flakes = [];
+    for (var i = 0; i < 110; i++) {
+      flakes.push({ x: Math.random(), y: Math.random(), r: 0.7 + Math.random() * 1.9, s: 0.12 + Math.random() * 0.45, w: Math.random() * 6.28 });
+    }
+    (function tick() {
+      x.clearRect(0, 0, W, H);
+      x.fillStyle = "#fff";
+      for (var i = 0; i < flakes.length; i++) {
+        var f = flakes[i];
+        f.y += f.s / 700;
+        f.w += 0.008 + f.s / 60;
+        if (f.y > 1.02) { f.y = -0.02; f.x = Math.random(); }
+        x.globalAlpha = 0.35 + 0.5 * Math.min(1, f.r / 2.2);
+        x.beginPath();
+        x.arc((f.x + Math.sin(f.w) * 0.012) * W, f.y * H, f.r * dpr, 0, 7);
+        x.fill();
+      }
+      requestAnimationFrame(tick);
+    })();
+  })();
+</script>
 </body>
 </html>

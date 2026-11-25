@@ -3,7 +3,7 @@
   "short_name": "Sobremesa",
   "description": "400 spanske samtalekort for to, fra B1 til C2. Trekk et kort, ta en kaffe, og snakk spansk sammen.",
   "lang": "no",
-  "start_url": "./",
+  "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F7F2E9",

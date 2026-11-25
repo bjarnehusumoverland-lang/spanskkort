@@ -578,7 +578,7 @@
           icon: "icons/icon-192.png",
           badge: "icons/icon-192.png",
           tag: "sobremesa-daily",
-          data: { url: "./#daily" },
+          data: { url: "./app.html#daily" },
         });
         state.notifiedDate = todayStr();
         save();

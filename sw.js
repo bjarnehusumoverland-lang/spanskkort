@@ -1,8 +1,11 @@
 /* Sobremesa · service worker */
-const VERSION = "sobremesa-v3";
+const VERSION = "sobremesa-v6";
 const SHELL = [
   "./",
   "index.html",
+  "app.html",
+  "css/landing.css",
+  "assets/familie-utklipp.png",
   "css/style.css",
   "js/app.js",
   "js/data/b1.js",
@@ -109,7 +112,7 @@ async function maybeNotify() {
       icon: "icons/icon-192.png",
       badge: "icons/icon-192.png",
       tag: "sobremesa-daily",
-      data: { url: "./#daily" },
+      data: { url: "./app.html#daily" },
     });
 
     st.notifiedDate = todayStr();
@@ -123,7 +126,7 @@ self.addEventListener("periodicsync", (e) => {
 
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
-  const url = (e.notification.data && e.notification.data.url) || "./";
+  const url = (e.notification.data && e.notification.data.url) || "./app.html";
   e.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
       for (const c of list) {
