@@ -1,6 +1,7 @@
-# Sobremesa · spanske samtalekort
+# Sobremesas · spanske samtalekort
 
 *Sobremesa* (es.) – den gode praten som blir igjen rundt bordet etter maten.
+Appen heter **Sobremesas** – flertall, for mange gode samtaler (og fordi sobremesas.no var ledig).
 
 En liten, vakker web-app med **400 spanske samtalekort for to** – 100 kort på hvert av
 nivåene B1, B2, C1 og C2. Laget for å brukes sammen med noen: trekk et kort, ta en
@@ -40,6 +41,20 @@ Tre mekanismer, i prioritert rekkefølge:
 
 Hvis et varsel «gikk tapt» (telefonen var av e.l.), viser appen et banner om at dagens
 kort venter neste gang den åpnes.
+
+## Julekort til utskrift
+
+[julekort/index.html](julekort/index.html) er et A6-julekort (passer i C6-konvolutt) med
+forsidedesignet og en QR-kode til appen: Cmd+P, papirstørrelse A6, ingen marger,
+«skriv ut bakgrunner» på, tosidig («vend på kortsiden»).
+
+QR-koden peker foreløpig på GitHub Pages-adressen. Når domenet er klart, lag ny kode med:
+
+```bash
+osascript -l JavaScript verktoy/lag-qr.js "https://dittdomene.no" julekort/qr.png
+```
+
+… og oppdater adresselinjen i `julekort/index.html` (klassen `.url`).
 
 ## Publisere
 

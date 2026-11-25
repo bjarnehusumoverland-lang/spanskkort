@@ -1,4 +1,4 @@
-/* Sobremesa · B1 · 100 kort */
+/* Sobremesas · B1 · 100 kort */
 self.DECKS = self.DECKS || {};
 self.DECKS.B1 = [
 /* ── Reiser ── */

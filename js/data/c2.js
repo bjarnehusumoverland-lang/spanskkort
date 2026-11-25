@@ -1,4 +1,4 @@
-/* Sobremesa · C2 · 100 kort */
+/* Sobremesas · C2 · 100 kort */
 self.DECKS = self.DECKS || {};
 self.DECKS.C2 = [
 /* ── Filosofi ── */

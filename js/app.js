@@ -1,4 +1,4 @@
-/* Sobremesa · app-logikk */
+/* Sobremesas · app-logikk */
 (function () {
   "use strict";
 
@@ -637,7 +637,7 @@
     const ics = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//Sobremesa//Spanskkort//NO",
+      "PRODID:-//Sobremesas//Spanskkort//NO",
       "BEGIN:VEVENT",
       "UID:sobremesa-daily-" + Date.now() + "@sobremesa",
       "DTSTAMP:" + fmt(new Date()) + "Z",
@@ -673,7 +673,7 @@
     let chosen = "B1";
     root.innerHTML = `
       <div class="onboard">
-        <h1 class="onboard-mark">Sobremesa</h1>
+        <h1 class="onboard-mark">Sobremesas</h1>
         <div class="onboard-tag">Spanske samtalekort</div>
         <p class="onboard-lead">Trekk et kort, ta en kaffe, og snakk spansk – sammen. Hvert kort har et spørsmål, oppfølgingsspørsmål, nyttige ord og en liten utfordring.<br><br>Hvilket nivå passer dere?</p>
         <div class="onboard-levels">

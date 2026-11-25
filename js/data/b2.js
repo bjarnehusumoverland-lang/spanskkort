@@ -1,4 +1,4 @@
-/* Sobremesa · B2 · 100 kort */
+/* Sobremesas · B2 · 100 kort */
 self.DECKS = self.DECKS || {};
 self.DECKS.B2 = [
 /* ── Kulturmøter ── */

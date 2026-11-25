@@ -1,4 +1,4 @@
-/* Sobremesa · C1 · 100 kort */
+/* Sobremesas · C1 · 100 kort */
 self.DECKS = self.DECKS || {};
 self.DECKS.C1 = [
 /* ── Samfunn ── */

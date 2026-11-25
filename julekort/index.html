@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sobremesas · julekort til utskrift</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #192433;
+    --night-deep: #121B27;
+    --cream: #F7F2E9;
+    --cream-warm: #FBF6EC;
+    --ink: #2A261F;
+    --ink-soft: #5C564B;
+    --terracotta: #BE4B23;
+    --gold: #F6C560;
+    --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --font-ui: "Inter", -apple-system, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  @page { size: 105mm 148mm; margin: 0; }
+
+  body {
+    margin: 0;
+    font-family: var(--font-ui);
+    background: #4a4a4a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8mm;
+    padding: 10mm 0;
+  }
+
+  .hint {
+    max-width: 105mm;
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #333;
+  }
+
+  .hint b { color: #000; }
+
+  .side {
+    width: 105mm;
+    height: 148mm;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.4);
+  }
+
+  @media print {
+    body { background: none; display: block; padding: 0; gap: 0; }
+    .hint { display: none; }
+    .side { box-shadow: none; page-break-after: always; }
+  }
+
+  /* ── Forside: vinterkvelden ── */
+
+  .front {
+    background:
+      radial-gradient(90% 40% at 50% 108%, rgba(246,197,96,0.16), transparent 60%),
+      radial-gradient(130% 80% at 50% -20%, #243349 0%, var(--night) 55%, var(--night-deep) 100%);
+    color: var(--cream);
+    text-align: center;
+  }
+
+  .front .snowdots, .front .lights { position: absolute; left: 0; width: 100%; }
+  .front .snowdots { top: 0; height: 100%; }
+  .front .lights { top: -2mm; height: 18mm; }
+
+  .bulb-gold  { fill: var(--gold); }
+  .bulb-red   { fill: #D8604A; }
+  .bulb-cream { fill: #F4E8CF; }
+
+  .front-inner {
+    position: relative;
+    z-index: 2;
+    padding: 14mm 9mm 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mark {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 24pt;
+    line-height: 1;
+  }
+
+  .mark-sub {
+    font-size: 6.5pt;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 1.5mm 0 7mm;
+  }
+
+  .card-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 15.5pt;
+    line-height: 1.2;
+    margin: 7mm 0 0;
+  }
+
+  .card-title em { color: var(--gold); }
+
+  .polaroid {
+    background: var(--cream-warm);
+    padding: 2.6mm 2.6mm 8.5mm;
+    border-radius: 1.6mm;
+    transform: rotate(-1.6deg);
+    width: 76mm;
+    position: relative;
+    box-shadow: 0 2mm 6mm rgba(0,0,0,0.45);
+  }
+
+  .photo {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 0.8mm;
+  }
+
+  .scene-bg, .hats { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .scene-bg { z-index: 0; }
+
+  .people {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+    z-index: 1;
+    filter: saturate(0.82) brightness(0.92) contrast(1.05) sepia(0.18);
+  }
+
+  .hats { z-index: 2; }
+
+  .photo::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background:
+      radial-gradient(125% 100% at 50% 42%, transparent 58%, rgba(12,16,30,0.42) 100%),
+      linear-gradient(195deg, rgba(34,46,82,0.26) 0%, rgba(44,46,72,0.15) 40%, rgba(140,84,44,0.1) 100%);
+    mix-blend-mode: multiply;
+  }
+
+  .photo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    background:
+      radial-gradient(90% 75% at 50% 105%, rgba(255,166,74,0.6), transparent 72%),
+      radial-gradient(48% 38% at 14% 92%, rgba(255,206,120,0.32), transparent 72%);
+    mix-blend-mode: screen;
+  }
+
+  .polaroid figcaption {
+    position: absolute;
+    left: 0; right: 0; bottom: 2.2mm;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 8.5pt;
+    color: #6b5f4e;
+  }
+
+  .sprig {
+    position: absolute;
+    top: -6mm; right: -5mm;
+    width: 17mm; height: 17mm;
+    transform: rotate(14deg);
+  }
+
+  .front-foot {
+    position: absolute;
+    bottom: 5mm;
+    left: 0; right: 0;
+    font-size: 7pt;
+    color: rgba(247,242,233,0.55);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  /* ── Bakside: kremhvit med QR ── */
+
+  .back {
+    background: var(--cream);
+    color: var(--ink);
+    padding: 9mm 11mm 8mm;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .back .mark { font-size: 15pt; color: var(--ink); }
+  .back .mark-sub { color: var(--terracotta); margin-bottom: 6mm; }
+
+  .steps {
+    text-align: left;
+    margin: 0 auto 6mm;
+    padding: 0;
+    list-style: none;
+    font-size: 9.5pt;
+    line-height: 1.45;
+  }
+
+  .steps li { padding: 1.2mm 0; display: flex; gap: 2.5mm; align-items: baseline; }
+
+  .steps .n {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-style: italic;
+    color: var(--terracotta);
+    font-size: 11pt;
+    flex-shrink: 0;
+  }
+
+  .qr-box {
+    margin: 0 auto 2mm;
+    background: var(--cream-warm);
+    border: 0.4mm solid rgba(42,38,31,0.14);
+    border-radius: 3mm;
+    padding: 3mm;
+    width: 37mm;
+    height: 37mm;
+  }
+
+  .qr-box img { width: 100%; height: 100%; image-rendering: pixelated; }
+
+  .url {
+    font-size: 6.6pt;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+    margin-bottom: 4.5mm;
+    word-break: break-all;
+  }
+
+  .sample {
+    background: var(--cream-warm);
+    border: 0.3mm solid rgba(42,38,31,0.1);
+    border-radius: 2.5mm;
+    padding: 3.5mm 4mm 3mm;
+    margin-bottom: auto;
+  }
+
+  .sample .tema {
+    display: inline-block;
+    font-size: 5.5pt;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #5E7B4A;
+    border: 0.3mm solid rgba(94,123,74,0.4);
+    border-radius: 10mm;
+    padding: 0.8mm 2.5mm;
+    margin-bottom: 1.8mm;
+  }
+
+  .sample .q {
+    font-family: var(--font-display);
+    font-size: 10.5pt;
+    line-height: 1.3;
+    margin: 0;
+  }
+
+  .greeting {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 11pt;
+    margin-top: 3.5mm;
+  }
+
+  .from {
+    font-size: 8pt;
+    color: var(--ink-soft);
+    margin-top: 3mm;
+  }
+
+  .from span {
+    display: inline-block;
+    width: 34mm;
+    border-bottom: 0.3mm solid rgba(42,38,31,0.35);
+  }
+</style>
+</head>
+<body>
+
+<div class="hint">
+  <b>Utskrift:</b> Cmd+P → papirstørrelse <b>A6</b> (eller A4 med «tilpass til side»), marger <b>Ingen</b>,
+  og slå på <b>«Skriv ut bakgrunner»</b>. Side 1 er forsiden, side 2 baksiden – skriv ut tosidig
+  («vend på kortsiden») på litt tykt papir. Kortet passer i en C6-konvolutt.
+</div>
+
+<!-- ══ FORSIDE ══ -->
+<section class="side front">
+  <svg class="snowdots" viewBox="0 0 105 148" preserveAspectRatio="none" aria-hidden="true">
+    <g fill="#fff">
+      <circle cx="9" cy="30" r="0.7"/><circle cx="22" cy="55" r="0.5"/><circle cx="15" cy="90" r="0.6"/>
+      <circle cx="7" cy="122" r="0.5"/><circle cx="30" cy="138" r="0.6"/><circle cx="50" cy="128" r="0.5"/>
+      <circle cx="88" cy="34" r="0.6"/><circle cx="97" cy="70" r="0.5"/><circle cx="83" cy="104" r="0.6"/>
+      <circle cx="95" cy="132" r="0.7"/><circle cx="68" cy="140" r="0.5"/><circle cx="40" cy="24" r="0.5"/>
+      <circle cx="60" cy="18" r="0.6"/><circle cx="76" cy="27" r="0.4"/><circle cx="4" cy="60" r="0.4"/>
+      <circle cx="101" cy="95" r="0.4"/><circle cx="55" cy="135" r="0.4"/>
+    </g>
+  </svg>
+
+  <svg class="lights" viewBox="0 0 1200 150" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M-20,8 C300,135 900,135 1220,8" fill="none" stroke="#0e1620" stroke-width="3"/>
+    <g>
+      <g transform="translate(120,47)"><circle cy="13" r="9" class="bulb-gold"/></g>
+      <g transform="translate(300,86)"><circle cy="13" r="9" class="bulb-red"/></g>
+      <g transform="translate(480,102)"><circle cy="13" r="9" class="bulb-cream"/></g>
+      <g transform="translate(660,102)"><circle cy="13" r="9" class="bulb-gold"/></g>
+      <g transform="translate(840,88)"><circle cy="13" r="9" class="bulb-red"/></g>
+      <g transform="translate(1020,55)"><circle cy="13" r="9" class="bulb-cream"/></g>
+    </g>
+  </svg>
+
+  <div class="front-inner">
+    <div class="mark">Sobremesas</div>
+    <div class="mark-sub">Spanske samtalekort · juleutgaven</div>
+
+    <figure class="polaroid" style="margin:0">
+      <div class="photo">
+        <svg class="scene-bg" viewBox="0 0 1938 1090" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#101A29"/>
+              <stop offset="0.55" stop-color="#1C2A42"/>
+              <stop offset="0.82" stop-color="#2C3E5A"/>
+              <stop offset="1" stop-color="#3A4A66"/>
+            </linearGradient>
+            <radialGradient id="moonglow">
+              <stop offset="0" stop-color="rgba(242,231,205,0.45)"/>
+              <stop offset="1" stop-color="rgba(242,231,205,0)"/>
+            </radialGradient>
+            <radialGradient id="winglow">
+              <stop offset="0" stop-color="rgba(242,178,75,0.55)"/>
+              <stop offset="1" stop-color="rgba(242,178,75,0)"/>
+            </radialGradient>
+          </defs>
+          <rect width="1938" height="1090" fill="url(#sky)"/>
+          <g fill="#EAE4D2">
+            <circle cx="150" cy="120" r="4"/><circle cx="340" cy="60" r="3" opacity="0.7"/><circle cx="520" cy="170" r="3.5"/>
+            <circle cx="700" cy="80" r="3" opacity="0.6"/><circle cx="930" cy="140" r="4" opacity="0.8"/><circle cx="1090" cy="50" r="3"/>
+            <circle cx="1420" cy="90" r="3.5" opacity="0.7"/><circle cx="1540" cy="260" r="3"/><circle cx="1810" cy="330" r="3.5" opacity="0.8"/>
+            <circle cx="250" cy="300" r="3" opacity="0.6"/><circle cx="440" cy="390" r="3.5" opacity="0.7"/><circle cx="80" cy="470" r="3" opacity="0.5"/>
+          </g>
+          <circle cx="1690" cy="165" r="200" fill="url(#moonglow)"/>
+          <circle cx="1690" cy="165" r="64" fill="#F2E7CD"/>
+          <circle cx="1668" cy="150" r="11" fill="#E2D3B2" opacity="0.7"/>
+          <circle cx="1706" cy="186" r="7" fill="#E2D3B2" opacity="0.6"/>
+          <path d="M0,660 C300,580 700,620 1100,575 C1400,545 1700,600 1938,555 L1938,1090 L0,1090 Z" fill="#223147"/>
+          <path d="M0,780 C350,705 800,755 1200,715 C1500,685 1750,735 1938,705 L1938,1090 L0,1090 Z" fill="#1B2838"/>
+          <g fill="#13202C">
+            <path d="M85,585 l52,130 h-104 Z"/><path d="M85,640 l62,150 h-124 Z"/><rect x="77" y="780" width="16" height="30"/>
+            <path d="M1835,545 l56,140 h-112 Z"/><path d="M1835,605 l66,160 h-132 Z"/><rect x="1826" y="755" width="18" height="34"/>
+            <path d="M1718,600 l44,110 h-88 Z"/><path d="M1718,648 l52,126 h-104 Z"/>
+          </g>
+          <g transform="translate(170,520)">
+            <circle cx="62" cy="137" r="86" fill="url(#winglow)"/>
+            <circle cx="198" cy="137" r="86" fill="url(#winglow)"/>
+            <rect x="0" y="60" width="260" height="155" fill="#241B13"/>
+            <path d="M-22,70 L130,-14 L282,70 Z" fill="#191210"/>
+            <path d="M-14,60 L130,-20 L274,60" fill="none" stroke="#D8E2EF" stroke-width="17" stroke-linecap="round"/>
+            <rect x="192" y="-4" width="36" height="46" fill="#2A2019"/>
+            <rect x="186" y="-14" width="48" height="12" rx="5" fill="#D8E2EF"/>
+            <path d="M210,-22 C202,-46 222,-60 212,-86" stroke="#B9C4D6" stroke-width="7" fill="none" stroke-linecap="round" opacity="0.4"/>
+            <rect x="40" y="108" width="44" height="58" rx="4" fill="#F2B24B"/>
+            <rect x="176" y="108" width="44" height="58" rx="4" fill="#F2B24B"/>
+            <path d="M62,108 V166 M40,137 H84 M198,108 V166 M176,137 H220" stroke="#3A2B1C" stroke-width="5"/>
+            <ellipse cx="130" cy="236" rx="190" ry="26" fill="rgba(242,178,75,0.14)"/>
+          </g>
+          <path d="M0,830 C300,785 600,840 900,818 C1250,795 1600,845 1938,805 L1938,1090 L0,1090 Z" fill="#9FB4CE"/>
+          <path d="M0,955 C400,905 900,985 1400,935 C1700,910 1850,955 1938,935 L1938,1090 L0,1090 Z" fill="#BCCDE2"/>
+        </svg>
+        <img class="people" src="../assets/familie-utklipp.png" alt="Mamma og pappa med nisseluer i en illustrert vinterkveld">
+        <svg class="hats" viewBox="0 0 1938 1090" aria-hidden="true">
+          <defs>
+            <g id="lue">
+              <path d="M-95,-8 C-85,-62 -35,-88 5,-84 C60,-79 100,-56 128,-32 C155,-16 175,-6 190,4 C165,16 135,8 100,-4 L96,-6 Z" fill="#C2402A"/>
+              <path d="M-60,-56 C-10,-72 60,-60 122,-28 C82,-40 20,-48 -38,-44 Z" fill="#A5331F" opacity="0.85"/>
+              <circle cx="196" cy="10" r="22" fill="#F2EADA"/>
+              <circle cx="190" cy="4" r="8" fill="#FFF8EA"/>
+              <g fill="#F2EADA">
+                <rect x="-106" y="-17" width="212" height="34" rx="17"/>
+                <circle cx="-85" cy="0" r="18"/><circle cx="-43" cy="2" r="19"/><circle cx="0" cy="-1" r="19"/>
+                <circle cx="43" cy="2" r="19"/><circle cx="85" cy="0" r="18"/>
+              </g>
+            </g>
+          </defs>
+          <use href="#lue" transform="translate(1234,164) rotate(-8) scale(1.55)"/>
+          <use href="#lue" transform="translate(830,388) scale(-1.4,1.4) rotate(-8)"/>
+        </svg>
+      </div>
+      <figcaption>Feliz Navidad — la sobremesa empieza aquí</figcaption>
+      <svg class="sprig" viewBox="0 0 120 120" aria-hidden="true">
+        <g stroke="#3E5641" stroke-width="3" stroke-linecap="round" fill="none">
+          <path d="M20,100 C45,70 70,45 100,22"/>
+          <path d="M38,82 l-16,-7 M38,82 l5,-17 M56,64 l-17,-6 M56,64 l6,-17 M74,46 l-16,-6 M74,46 l6,-16 M90,32 l-13,-5 M90,32 l5,-13"/>
+        </g>
+        <g fill="#B5402B"><circle cx="30" cy="97" r="7"/><circle cx="44" cy="104" r="6"/><circle cx="42" cy="90" r="5"/></g>
+      </svg>
+    </figure>
+
+    <h1 class="card-title">Jula er én lang <em>sobremesa</em>.</h1>
+  </div>
+
+  <div class="front-foot">God jul · Feliz Navidad</div>
+</section>
+
+<!-- ══ BAKSIDE ══ -->
+<section class="side back">
+  <div class="mark">Sobremesas</div>
+  <div class="mark-sub">400 spanske samtalekort for to</div>
+
+  <ol class="steps">
+    <li><span class="n">1.</span><span>Skann koden med mobilkameraet</span></li>
+    <li><span class="n">2.</span><span>Velg nivå – fra B1 til C2</span></li>
+    <li><span class="n">3.</span><span>Trekk et kort, tenn et lys … og bli sittende</span></li>
+  </ol>
+
+  <div class="qr-box"><img src="qr.png" alt="QR-kode til Sobremesas-appen"></div>
+  <div class="url">bjarnehusumoverland-lang.github.io/spanskkort</div>
+
+  <div class="sample">
+    <span class="tema">Smakebit · B1</span>
+    <p class="q" lang="es">¿Cuál ha sido el mejor regalo que has recibido?</p>
+  </div>
+
+  <div class="greeting">¡Feliz Navidad!</div>
+  <div class="from">God jul fra <span>&nbsp;</span></div>
+</section>
+
+</body>
+</html>
