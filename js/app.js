@@ -485,6 +485,7 @@
         if (perm === "granted") {
           toast("Varsler er på ☕");
           registerPeriodicSync();
+          requestPersistentStorage();
         } else {
           toast("Fikk ikke tillatelse – prøv kalenderknappen i stedet");
         }
@@ -585,6 +586,16 @@
       }
     } catch (e) { /* ignorer */ }
     scheduleNotification();
+  }
+
+  /* Be nettleseren verne dataene mot automatisk opprydding */
+  async function requestPersistentStorage() {
+    try {
+      if (navigator.storage && navigator.storage.persist) {
+        const already = await navigator.storage.persisted();
+        if (!already) await navigator.storage.persist();
+      }
+    } catch (e) { /* ignorer */ }
   }
 
   async function registerPeriodicSync() {
@@ -729,6 +740,7 @@
   mirrorToSW();
   scheduleNotification();
   if (state.notif.on) registerPeriodicSync();
+  if (matchMedia("(display-mode: standalone)").matches || state.notif.on) requestPersistentStorage();
   if (!state.onboarded) showOnboarding();
 
   document.addEventListener("visibilitychange", () => {

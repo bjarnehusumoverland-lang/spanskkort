@@ -48,18 +48,36 @@ kort venter neste gang den åpnes.
 forsidedesignet og en QR-kode til appen: Cmd+P, papirstørrelse A6, ingen marger,
 «skriv ut bakgrunner» på, tosidig («vend på kortsiden»).
 
-QR-koden peker foreløpig på GitHub Pages-adressen. Når domenet er klart, lag ny kode med:
+QR-koden peker på https://sobremesas.no. Skulle adressen endres, lag ny kode med:
 
 ```bash
-osascript -l JavaScript verktoy/lag-qr.js "https://dittdomene.no" julekort/qr.png
+osascript -l JavaScript verktoy/lag-qr.js "https://ny-adresse.no" julekort/qr.png
 ```
 
 … og oppdater adresselinjen i `julekort/index.html` (klassen `.url`).
 
-## Publisere
+## Publisere (sobremesas.no + GitHub Pages)
 
-Alt er relative stier, så appen kan legges rett på GitHub Pages, Netlify e.l.
-(HTTPS kreves for service worker og varsler.)
+Alt er relative stier, så appen kan legges rett på GitHub Pages.
+(HTTPS kreves for service worker og varsler – Pages ordner sertifikatet.)
+
+1. **Push** repoet til GitHub.
+2. **GitHub → Settings → Pages**: «Deploy from a branch» → `main` → `/ (root)` → Save.
+3. Samme sted, under **Custom domain**: skriv `sobremesas.no` → Save.
+   (`CNAME`-filen i repoet holder innstillingen fast.)
+4. **Hos Domeneshop** (Mine domener → sobremesas.no → DNS-innstillinger):
+   - Slett eventuelle ferdigoppsatte A-/AAAA-pekere (domeneparkering).
+   - Legg inn **fire A-poster** med tomt vertsnavn-felt (selve domenet):
+     `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
+   - Valgfritt, men anbefalt – fire **AAAA-poster** samme sted:
+     `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`
+   - Én **CNAME-post** med vertsnavn `www` som peker på
+     `bjarnehusumoverland-lang.github.io`
+5. Vent på DNS (minutter til et par timer). Når Pages-siden viser grønn hake
+   for domenet, huk av **«Enforce HTTPS»**.
+
+Deretter svarer https://sobremesas.no (og www-varianten) med landingssiden,
+og QR-koden på julekortet virker.
 
 ## Struktur
 
