@@ -50,6 +50,9 @@
   let tab = "deck";
   let notifTimeout = null;
   let timerInterval = null;
+  // Når appen selv har utløst en knapp på slippet, skal nettleserens
+  // eget klikk rett etterpå ikke utløse den én gang til
+  let swallowNativeUntil = 0;
 
   function load() {
     try {
@@ -344,10 +347,13 @@
     if (!opts.noSwipe) {
       let x0 = null, y0 = null, t0 = 0, dragging = false, pid = null, lastDx = 0, lastDy = 0;
       let suppressClick = false;
+      let startBtn = null;
 
-      // Et sveip som startet på en knapp skal ikke også telle som et trykk
+      // Svelg klikk som ikke skal telle: et drag som endte på en knapp,
+      // eller nettleserens eget klikk når appen alt har utløst knappen
       card.addEventListener("click", (e) => {
-        if (!suppressClick) return;
+        const duplicate = e.isTrusted && performance.now() < swallowNativeUntil;
+        if (!suppressClick && !duplicate) return;
         suppressClick = false;
         e.stopPropagation();
         e.preventDefault();
@@ -369,7 +375,6 @@
         if (!dragging) {
           if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
             dragging = true;
-            suppressClick = true;
             // inngangsanimasjonen ville ellers overstyrt draget
             card.style.animation = "none";
             card.classList.add("dragging");
@@ -396,6 +401,9 @@
         const dx = hasUpPos ? e.clientX - x0 : lastDx;
         const dy = hasUpPos ? e.clientY - y0 : lastDy;
         const dt = Math.max(1, performance.now() - t0);
+        const btn = startBtn;
+        const upX = hasUpPos ? e.clientX : x0 + lastDx;
+        const upY = hasUpPos ? e.clientY : y0 + lastDy;
         cleanup();
 
         const horizontal = Math.abs(dx) > Math.abs(dy) * 1.2;
@@ -403,10 +411,20 @@
         // rask, kort flikk teller også som et sveip
         const flick = Math.abs(dx) > 30 && dt < 350 && Math.abs(dx) / dt > 0.3;
         const swipe = horizontal && (far || flick);
+        const moved = Math.hypot(dx, dy);
 
-        if (swipe) suppressClick = true;
-        // et eventuelt klikk kommer rett etter slippet – etterpå skal knappene virke som vanlig
+        // Et trykk på en knapp avgjøres her, ikke av nettleseren: fingeren
+        // får gli litt (typisk rett etter et sveip) uten at trykket går tapt
+        let tap = false;
+        if (!swipe && btn && btn.isConnected && moved < 24 && dt < 1000) {
+          const r = btn.getBoundingClientRect();
+          tap = upX >= r.left - 14 && upX <= r.right + 14 && upY >= r.top - 14 && upY <= r.bottom + 14;
+        }
+
+        // Et tydelig drag som ikke ble til et sveip skal ikke etterlate et klikk
+        suppressClick = swipe || (!tap && moved >= 24);
         setTimeout(() => { suppressClick = false; }, 400);
+
         if (swipe && dx < 0) {
           card.classList.remove("dragging");
           nextCard(card); // spøkelset starter fra der fingeren slapp
@@ -416,6 +434,10 @@
         } else {
           if (swipe && dx > 0) toast("Dere er ved starten av bunken");
           snapBack();
+          if (tap) {
+            swallowNativeUntil = performance.now() + 450;
+            btn.click();
+          }
         }
       };
 
@@ -431,6 +453,7 @@
         x0 = y0 = null;
         dragging = false;
         pid = null;
+        startBtn = null;
         lastDx = 0;
         lastDy = 0;
         document.removeEventListener("pointermove", onMove);
@@ -446,6 +469,7 @@
         cleanup(); // rydd bort eventuell gammel, uavsluttet gest
         suppressClick = false;
         card.style.transition = "";
+        startBtn = e.target.closest ? e.target.closest("button") : null;
         pid = e.pointerId;
         x0 = e.clientX;
         y0 = e.clientY;
