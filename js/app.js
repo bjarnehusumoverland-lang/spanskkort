@@ -317,10 +317,16 @@
         const dx = x0 === null ? 0 : e.clientX - x0;
         const wasDragging = dragging;
         card.classList.remove("dragging");
-        card.style.transform = "";
-        card.style.opacity = "";
         cleanup();
-        if (wasDragging && dx < -70) nextCard(card);
+        if (wasDragging && dx < -70) {
+          nextCard(card); // spøkelset starter fra der fingeren slapp
+        } else {
+          // myk tilbakesprett i stedet for brått hopp
+          card.style.transition = "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease";
+          card.style.transform = "";
+          card.style.opacity = "";
+          setTimeout(() => { card.style.transition = ""; }, 320);
+        }
       };
 
       function cleanup() {
@@ -333,6 +339,7 @@
 
       card.addEventListener("pointerdown", (e) => {
         if (e.target.closest("button") || (e.pointerType === "mouse" && e.button !== 0)) return;
+        card.style.transition = "";
         x0 = e.clientX;
         y0 = e.clientY;
         dragging = false;
@@ -343,13 +350,39 @@
     }
   }
 
+  /* Sømløst kortbytte: det gamle kortet løftes ut som et «spøkelse»
+     som flyr videre mot venstre OPPÅ, mens det nye kortet rendres
+     under umiddelbart. Ingen dødtid, ingen tom stabel, knappen på
+     det nye kortet virker med én gang. */
   function nextCard(cardEl) {
+    if (!cardEl.isConnected) return;
     clearInterval(timerInterval);
-    cardEl.classList.add("out");
-    setTimeout(() => {
-      drawCard(state.level);
-      renderTab();
-    }, 190);
+
+    const rect = cardEl.getBoundingClientRect();
+    const ghost = cardEl.cloneNode(true);
+    ghost.style.position = "fixed";
+    ghost.style.left = rect.left + "px";
+    ghost.style.top = rect.top + "px";
+    ghost.style.width = rect.width + "px";
+    ghost.style.margin = "0";
+    ghost.style.zIndex = "60";
+    ghost.style.pointerEvents = "none";
+    ghost.style.animation = "none";
+    ghost.style.transform = "none";
+    ghost.style.opacity = cardEl.style.opacity || "1";
+    ghost.style.transition = "transform 0.22s ease-in, opacity 0.22s ease-in";
+    document.body.appendChild(ghost);
+
+    drawCard(state.level);
+    renderTab();
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        ghost.style.transform = "translateX(-" + (window.innerWidth * 1.1) + "px) rotate(-8deg)";
+        ghost.style.opacity = "0";
+      });
+    });
+    setTimeout(() => ghost.remove(), 280);
   }
 
   /* ── Visninger ── */
