@@ -1,5 +1,5 @@
 /* Sobremesas · service worker */
-const VERSION = "sobremesas-v15";
+const VERSION = "sobremesas-v16";
 const SHELL = [
   "./",
   "index.html",
