@@ -22,6 +22,7 @@
     level: "B1",
     queues: {},        // per nivå: gjenstående indekser (stokket)
     current: {},       // per nivå: indeksen som vises nå
+    history: {},       // per nivå: tidligere viste kort (for å bla tilbake)
     seenCount: {},     // per nivå: antall sett totalt
     favs: [],          // ["B1-12", ...]
     streak: { count: 0, last: "" },
@@ -136,7 +137,11 @@
 
   function drawCard(level, silent) {
     ensureQueue(level);
-    const wasEmpty = state.queues[level].length === 0;
+    if (typeof state.current[level] === "number") {
+      const h = state.history[level] = state.history[level] || [];
+      h.push(state.current[level]);
+      if (h.length > 30) h.shift();
+    }
     const idx = state.queues[level].shift();
     state.current[level] = idx;
     state.seenCount[level] = (state.seenCount[level] || 0) + 1;
@@ -149,6 +154,21 @@
       toast("Dere har vært gjennom alle " + DECKS[level].length + " kortene – stokker på nytt!");
     }
     return idx;
+  }
+
+  /* Bla tilbake: forrige kort hentes fram igjen, og kortet man
+     forlot legges øverst i bunken så det ikke går tapt */
+  function goBack(level) {
+    const h = state.history[level] || [];
+    if (!h.length) return false;
+    ensureQueue(level);
+    if (typeof state.current[level] === "number") {
+      state.queues[level].unshift(state.current[level]);
+    }
+    state.current[level] = h.pop();
+    if (state.seenCount[level]) state.seenCount[level]--;
+    save();
+    return true;
   }
 
   function touchStreak() {
@@ -218,6 +238,9 @@
           </div>
         </div>
         <div class="card-actions">
+          ${opts.noNext ? "" : `<button class="icon-btn back-btn" aria-label="Forrige kort">
+            <svg viewBox="0 0 24 24"><path d="M14.5 6 8.5 12l6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>`}
           <button class="icon-btn fav-btn ${faved ? "faved" : ""}" aria-label="Lagre som favoritt" aria-pressed="${faved}">
             <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-10a4.1 4.1 0 0 1 7-2.9A4.1 4.1 0 0 1 19 10c0 5.4-7 10-7 10z" fill="${faved ? "currentColor" : "none"}" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
           </button>
@@ -291,6 +314,9 @@
     const nextBtn = $(".btn-next", card);
     if (nextBtn) nextBtn.addEventListener("click", () => nextCard(card));
 
+    const backBtn = $(".back-btn", card);
+    if (backBtn) backBtn.addEventListener("click", () => backCard(card));
+
     if (!opts.noSwipe) {
       let x0 = null, y0 = null, dragging = false;
 
@@ -320,6 +346,8 @@
         cleanup();
         if (wasDragging && dx < -70) {
           nextCard(card); // spøkelset starter fra der fingeren slapp
+        } else if (wasDragging && dx > 70) {
+          backCard(card); // sveip høyre = forrige kort
         } else {
           // myk tilbakesprett i stedet for brått hopp
           card.style.transition = "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease";
@@ -351,10 +379,9 @@
   }
 
   /* Sømløst kortbytte: det gamle kortet løftes ut som et «spøkelse»
-     som flyr videre mot venstre OPPÅ, mens det nye kortet rendres
-     under umiddelbart. Ingen dødtid, ingen tom stabel, knappen på
-     det nye kortet virker med én gang. */
-  function nextCard(cardEl) {
+     som flyr videre OPPÅ (venstre = nytt, høyre = tilbake), mens
+     kortet under rendres umiddelbart. Ingen dødtid, ingen tom stabel. */
+  function swapCard(cardEl, dir, mutate) {
     if (!cardEl.isConnected) return;
     clearInterval(timerInterval);
 
@@ -373,16 +400,29 @@
     ghost.style.transition = "transform 0.22s ease-in, opacity 0.22s ease-in";
     document.body.appendChild(ghost);
 
-    drawCard(state.level);
+    mutate();
     renderTab();
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        ghost.style.transform = "translateX(-" + (window.innerWidth * 1.1) + "px) rotate(-8deg)";
+        ghost.style.transform = "translateX(" + (dir * window.innerWidth * 1.1) + "px) rotate(" + (dir * 8) + "deg)";
         ghost.style.opacity = "0";
       });
     });
     setTimeout(() => ghost.remove(), 280);
+  }
+
+  function nextCard(cardEl) {
+    swapCard(cardEl, -1, () => drawCard(state.level));
+  }
+
+  function backCard(cardEl) {
+    const h = state.history[state.level] || [];
+    if (!h.length) {
+      toast("Ingen kort å bla tilbake til ennå");
+      return;
+    }
+    swapCard(cardEl, 1, () => goBack(state.level));
   }
 
   /* ── Visninger ── */
@@ -416,7 +456,7 @@
       ${levelChips()}
       ${cardHTML(state.level, idx, { peekAlt: state.seenCount[state.level] || 0 })}
       <div class="deck-progress">${left} uleste kort igjen på nivå ${state.level}</div>
-      <div class="swipe-hint">Tips: dra kortet mot venstre for et nytt</div>
+      <div class="swipe-hint">Tips: dra kortet – venstre for nytt, høyre for forrige</div>
     `;
   }
 
