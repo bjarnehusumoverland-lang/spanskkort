@@ -139,8 +139,7 @@
     ensureQueue(level);
     if (typeof state.current[level] === "number") {
       const h = state.history[level] = state.history[level] || [];
-      h.push(state.current[level]);
-      if (h.length > 30) h.shift();
+      h.push(state.current[level]); // full historikk – bla tilbake helt til starten
     }
     const idx = state.queues[level].shift();
     state.current[level] = idx;
@@ -419,7 +418,7 @@
   function backCard(cardEl) {
     const h = state.history[state.level] || [];
     if (!h.length) {
-      toast("Ingen kort å bla tilbake til ennå");
+      toast("Dere er ved starten av bunken");
       return;
     }
     swapCard(cardEl, 1, () => goBack(state.level));
