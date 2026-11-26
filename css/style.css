@@ -841,28 +841,36 @@ input[type="time"] {
 
 /* ── Peek-figurer (jul) ─────────────────── */
 
+/* Vinduet slutter nøyaktig ved kortkanten og klipper alt under
+   med overflow – virker i alle nettlesere, så ingenting kan
+   «flashe» gjennom kortet under bytte-animasjonen */
+.peek-window {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -150px;
+  height: 150px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
 .peek {
   position: absolute;
   width: 102px;
-  z-index: 1;
-  pointer-events: none;
   animation: peek-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.12s backwards;
 }
 
-/* Klippes nøyaktig ved kortkanten, så ingenting «flasher»
-   gjennom kortet under bytte-animasjonen */
 .peek.mor {
   right: 30px;
-  top: -76px;
+  bottom: -22px;
   transform: rotate(2deg);
-  clip-path: inset(-50% -18% calc(100% - 76px) -18%);
 }
 
 .peek.far {
   left: 30px;
-  top: -76px;
+  bottom: -28px;
   transform: rotate(-2deg);
-  clip-path: inset(-50% -18% calc(100% - 76px) -18%);
 }
 
 .peek img {
@@ -880,7 +888,7 @@ input[type="time"] {
 .peek.far .peek-lue { top: -14%; left: 4%; transform: rotate(-6deg); }
 
 @keyframes peek-in {
-  from { transform: translateY(52px) rotate(0deg); }
+  from { transform: translateY(58px) rotate(0deg); }
 }
 
 /* ── Juletema (desember og januar) ──────── */

@@ -187,7 +187,7 @@
     const alt = opts.peekAlt !== undefined ? opts.peekAlt : idx;
     const who = alt % 2 === 0 ? "mor" : "far";
     const peek = NAVIDAD
-      ? `<div class="peek ${who}" aria-hidden="true"><img src="assets/${who}.png" alt="">${LUE_SVG}</div>`
+      ? `<div class="peek-window" aria-hidden="true"><div class="peek ${who}"><img src="assets/${who}.png" alt="">${LUE_SVG}</div></div>`
       : "";
 
     return `
