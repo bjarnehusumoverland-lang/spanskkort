@@ -1,5 +1,5 @@
 /* Sobremesas · service worker */
-const VERSION = "sobremesas-v10";
+const VERSION = "sobremesas-v15";
 const SHELL = [
   "./",
   "index.html",
@@ -7,8 +7,11 @@ const SHELL = [
   "css/landing.css",
   "assets/familie-utklipp.png",
   "julekort/qr.png",
+  "assets/mor.png",
+  "assets/far.png",
   "css/style.css",
   "js/app.js",
+  "js/varsler.js",
   "js/data/b1.js",
   "js/data/b2.js",
   "js/data/c1.js",
@@ -20,7 +23,7 @@ const SHELL = [
   "icons/apple-touch-icon.png",
 ];
 
-importScripts("js/data/b1.js", "js/data/b2.js", "js/data/c1.js", "js/data/c2.js");
+importScripts("js/data/b1.js", "js/data/b2.js", "js/data/c1.js", "js/data/c2.js", "js/varsler.js");
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
@@ -59,7 +62,7 @@ self.addEventListener("fetch", (e) => {
     e.respondWith(
       caches.open(VERSION).then(async (c) => {
         const hit = await c.match(e.request);
-        const refresh = fetch(e.request)
+        const refresh = fetch(e.request, { cache: "no-cache" })
           .then((res) => {
             if (res.ok) c.put(e.request, res.clone());
             return res;
@@ -104,12 +107,11 @@ async function maybeNotify() {
     due.setHours(hh, mm, 0, 0);
     if (Date.now() < due.getTime()) return;
 
-    const deck = (self.DECKS || {})[st.level] || [];
-    if (!deck.length) return;
-    const card = deck[hashStr(todayStr() + "·" + st.level) % deck.length];
+    const varsler = self.VARSLER || [];
+    const v = varsler[hashStr(todayStr()) % varsler.length] || { t: "☕ Dagens spanskkort er klart", b: "" };
 
-    await self.registration.showNotification("☕ Dagens spanskkort er klart", {
-      body: card.q,
+    await self.registration.showNotification(v.t, {
+      body: v.b,
       icon: "icons/icon-192.png",
       badge: "icons/icon-192.png",
       tag: "sobremesa-daily",

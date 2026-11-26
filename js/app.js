@@ -29,6 +29,21 @@
     notifiedDate: "",
   };
 
+  /* Juletemaet er på året rundt – appen var tross alt en julegave */
+  const NAVIDAD = true;
+
+  const LUE_SVG = `<svg class="peek-lue" viewBox="-110 -92 332 128" aria-hidden="true">
+    <path d="M-95,-8 C-85,-62 -35,-88 5,-84 C60,-79 100,-56 128,-32 C155,-16 175,-6 190,4 C165,16 135,8 100,-4 L96,-6 Z" fill="#C2402A"/>
+    <path d="M-60,-56 C-10,-72 60,-60 122,-28 C82,-40 20,-48 -38,-44 Z" fill="#A5331F" opacity="0.85"/>
+    <circle cx="196" cy="10" r="22" fill="#F2EADA"/>
+    <circle cx="190" cy="4" r="8" fill="#FFF8EA"/>
+    <g fill="#F2EADA">
+      <rect x="-106" y="-17" width="212" height="34" rx="17"/>
+      <circle cx="-85" cy="0" r="18"/><circle cx="-43" cy="2" r="19"/><circle cx="0" cy="-1" r="19"/>
+      <circle cx="43" cy="2" r="19"/><circle cx="85" cy="0" r="18"/>
+    </g>
+  </svg>`;
+
   let state = load();
   let tab = "deck";
   let notifTimeout = null;
@@ -169,8 +184,15 @@
     const faved = state.favs.includes(id);
     const q = esc(c.q).replace(/([¿¡])/g, '<span class="inverted">$1</span>');
 
+    const alt = opts.peekAlt !== undefined ? opts.peekAlt : idx;
+    const who = alt % 2 === 0 ? "mor" : "far";
+    const peek = NAVIDAD
+      ? `<div class="peek ${who}" aria-hidden="true"><img src="assets/${who}.png" alt="">${LUE_SVG}</div>`
+      : "";
+
     return `
     <div class="stack">
+      ${peek}
       <article class="card" data-id="${id}" data-level="${level}" data-idx="${idx}">
         <div class="card-head">
           <span class="card-tema tema-${level}">${esc(c.t)}</span>
@@ -270,18 +292,54 @@
     if (nextBtn) nextBtn.addEventListener("click", () => nextCard(card));
 
     if (!opts.noSwipe) {
-      let x0 = null, y0 = null;
-      card.addEventListener("touchstart", (e) => {
-        x0 = e.touches[0].clientX;
-        y0 = e.touches[0].clientY;
-      }, { passive: true });
-      card.addEventListener("touchend", (e) => {
+      let x0 = null, y0 = null, dragging = false;
+
+      const onMove = (e) => {
         if (x0 === null) return;
-        const dx = e.changedTouches[0].clientX - x0;
-        const dy = e.changedTouches[0].clientY - y0;
-        if (dx < -60 && Math.abs(dy) < 70) nextCard(card);
+        const dx = e.clientX - x0;
+        const dy = e.clientY - y0;
+        if (!dragging) {
+          if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
+            dragging = true;
+            card.classList.add("dragging");
+          } else if (Math.abs(dy) > 16) {
+            cleanup(); // brukeren ruller siden
+            return;
+          }
+        }
+        if (dragging) {
+          card.style.transform = "translateX(" + dx + "px) rotate(" + dx / 50 + "deg)";
+          card.style.opacity = String(Math.max(0.35, 1 - Math.abs(dx) / 450));
+        }
+      };
+
+      const onUp = (e) => {
+        const dx = x0 === null ? 0 : e.clientX - x0;
+        const wasDragging = dragging;
+        card.classList.remove("dragging");
+        card.style.transform = "";
+        card.style.opacity = "";
+        cleanup();
+        if (wasDragging && dx < -70) nextCard(card);
+      };
+
+      function cleanup() {
         x0 = y0 = null;
-      }, { passive: true });
+        dragging = false;
+        document.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointerup", onUp);
+        document.removeEventListener("pointercancel", onUp);
+      }
+
+      card.addEventListener("pointerdown", (e) => {
+        if (e.target.closest("button") || (e.pointerType === "mouse" && e.button !== 0)) return;
+        x0 = e.clientX;
+        y0 = e.clientY;
+        dragging = false;
+        document.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerup", onUp);
+        document.addEventListener("pointercancel", onUp);
+      });
     }
   }
 
@@ -304,7 +362,7 @@
     else if (tab === "favs") view.innerHTML = favsView();
     else view.innerHTML = settingsView();
     bindTabContent();
-    window.scrollTo({ top: 0 });
+    view.scrollTop = 0;
   }
 
   function levelChips() {
@@ -323,9 +381,9 @@
     return `
       ${banner}
       ${levelChips()}
-      ${cardHTML(state.level, idx)}
+      ${cardHTML(state.level, idx, { peekAlt: state.seenCount[state.level] || 0 })}
       <div class="deck-progress">${left} uleste kort igjen på nivå ${state.level}</div>
-      <div class="swipe-hint">Tips: sveip kortet mot venstre for et nytt</div>
+      <div class="swipe-hint">Tips: dra kortet mot venstre for et nytt</div>
     `;
   }
 
@@ -338,7 +396,7 @@
     return `
       <div class="daily-date">${dateEs}</div>
       <div class="daily-note">Samme kort hele dagen – perfekt til kaffen. Nytt i morgen.</div>
-      ${cardHTML(state.level, idx, { noNext: true })}
+      ${cardHTML(state.level, idx, { noNext: true, peekAlt: new Date().getDate() })}
     `;
   }
 
@@ -397,6 +455,7 @@
           ${DAY_LABELS.map((d, i) => `<button class="day-chip ${n.days.includes(i) ? "on" : ""}" data-day="${i}" aria-pressed="${n.days.includes(i)}">${d}</button>`).join("")}
         </div>
         ${status}
+        <button class="btn-secondary" id="test-notif-btn">🔔 Send et testvarsel nå</button>
         <button class="btn-secondary" id="ics-btn">📅 Legg påminnelsen i kalenderen</button>
         <div class="notif-status">Kalender-påminnelsen er den sikreste måten – den virker på alle telefoner, uansett.</div>
       </div>
@@ -520,6 +579,7 @@
     );
 
     $("#ics-btn", view).addEventListener("click", downloadICS);
+    $("#test-notif-btn", view).addEventListener("click", sendTestNotification);
 
     $("#reset-btn", view).addEventListener("click", () => {
       if (!confirm("Nullstille fremdriften? Favorittene beholdes.")) return;
@@ -564,18 +624,22 @@
     notifTimeout = setTimeout(fireNotification, ms);
   }
 
+  function dailyVarsel() {
+    const v = self.VARSLER || [];
+    return v[hashStr(todayStr()) % v.length] || { t: "☕ Dagens spanskkort er klart", b: "" };
+  }
+
   async function fireNotification() {
     if (!state.notif.on || state.notifiedDate === todayStr()) {
       scheduleNotification();
       return;
     }
-    const idx = dailyIndex(state.level, todayStr());
-    const c = DECKS[state.level][idx];
+    const v = dailyVarsel();
     try {
       const reg = await navigator.serviceWorker.getRegistration();
       if (reg) {
-        await reg.showNotification("☕ Dagens spanskkort er klart", {
-          body: c.q,
+        await reg.showNotification(v.t, {
+          body: v.b,
           icon: "icons/icon-192.png",
           badge: "icons/icon-192.png",
           tag: "sobremesa-daily",
@@ -586,6 +650,34 @@
       }
     } catch (e) { /* ignorer */ }
     scheduleNotification();
+  }
+
+  async function sendTestNotification() {
+    if (!("Notification" in window)) {
+      toast("Denne nettleseren støtter ikke varsler");
+      return;
+    }
+    let perm = Notification.permission;
+    if (perm === "default") perm = await Notification.requestPermission();
+    if (perm !== "granted") {
+      toast("Varsler er blokkert – sjekk nettleserens innstillinger");
+      return;
+    }
+    const v = (self.VARSLER || [])[Math.floor(Math.random() * (self.VARSLER || []).length)];
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg && v) {
+        await reg.showNotification(v.t, {
+          body: v.b,
+          icon: "icons/icon-192.png",
+          badge: "icons/icon-192.png",
+          data: { url: "./app.html#daily" },
+        });
+        toast("Testvarsel sendt – sjekk varslingssenteret");
+      }
+    } catch (e) {
+      toast("Fikk ikke sendt varsel her – prøv fra installert app");
+    }
   }
 
   /* Be nettleseren verne dataene mot automatisk opprydding */
@@ -731,6 +823,8 @@
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
+
+  if (NAVIDAD) document.body.classList.add("navidad");
 
   if (location.hash === "#daily") tab = "daily";
 

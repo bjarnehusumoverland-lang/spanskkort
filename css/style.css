@@ -40,12 +40,18 @@ body {
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* ── Topp ───────────────────────────────── */
 
 .top {
+  flex-shrink: 0;
+  width: 100%;
   max-width: 600px;
   margin: 0 auto;
   padding: calc(14px + env(safe-area-inset-top, 0px)) 22px 4px;
@@ -87,9 +93,14 @@ body {
 /* ── Hovedflate ─────────────────────────── */
 
 .view {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  align-self: center;
+  width: 100%;
   max-width: 600px;
-  margin: 0 auto;
-  padding: 10px 20px calc(96px + var(--safe-bottom));
+  padding: 10px 20px 28px;
 }
 
 .section-label {
@@ -649,14 +660,11 @@ input[type="time"] {
 /* ── Faner ──────────────────────────────── */
 
 .tabs {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   gap: 4px;
   background: rgba(247, 242, 233, 0.92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--line-soft);
   padding: 8px 10px calc(8px + var(--safe-bottom));
   z-index: 50;
@@ -816,6 +824,126 @@ input[type="time"] {
   .card-actions { flex-wrap: wrap; }
   .card-actions .btn-next { flex: 1 1 100%; order: 3; }
 }
+
+/* ── Dra-for-nytt-kort ──────────────────── */
+
+.card { touch-action: pan-y; cursor: grab; }
+
+.card.dragging {
+  transition: none;
+  cursor: grabbing;
+}
+
+.card.dragging, .card.dragging * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Peek-figurer (jul) ─────────────────── */
+
+.peek {
+  position: absolute;
+  width: 102px;
+  z-index: 1;
+  pointer-events: none;
+  animation: peek-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.12s backwards;
+}
+
+/* Klippes nøyaktig ved kortkanten, så ingenting «flasher»
+   gjennom kortet under bytte-animasjonen */
+.peek.mor {
+  right: 30px;
+  top: -76px;
+  transform: rotate(2deg);
+  clip-path: inset(-50% -18% calc(100% - 76px) -18%);
+}
+
+.peek.far {
+  left: 30px;
+  top: -76px;
+  transform: rotate(-2deg);
+  clip-path: inset(-50% -18% calc(100% - 76px) -18%);
+}
+
+.peek img {
+  display: block;
+  width: 100%;
+  filter: saturate(0.88) brightness(0.97) sepia(0.12) drop-shadow(0 2px 5px rgba(10, 15, 30, 0.35));
+}
+
+.peek-lue {
+  position: absolute;
+  width: 82%;
+}
+
+.peek.mor .peek-lue { top: -3%; left: -10%; transform: scaleX(-1) rotate(-3deg); }
+.peek.far .peek-lue { top: -14%; left: 4%; transform: rotate(-6deg); }
+
+@keyframes peek-in {
+  from { transform: translateY(52px) rotate(0deg); }
+}
+
+/* ── Juletema (desember og januar) ──────── */
+
+body.navidad {
+  background: #192433;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cg fill='white' fill-opacity='0.3'%3E%3Ccircle cx='24' cy='40' r='1.6'/%3E%3Ccircle cx='140' cy='18' r='1.2'/%3E%3Ccircle cx='210' cy='90' r='1.5'/%3E%3Ccircle cx='70' cy='150' r='1.2'/%3E%3Ccircle cx='180' cy='200' r='1.6'/%3E%3Ccircle cx='30' cy='230' r='1.1'/%3E%3Ccircle cx='250' cy='160' r='1.2'/%3E%3Ccircle cx='110' cy='95' r='1'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(90% 50% at 50% 110%, rgba(246, 197, 96, 0.13), transparent 60%),
+    radial-gradient(130% 80% at 50% -20%, #243349 0%, #192433 55%, #121B27 100%);
+}
+
+body.navidad .wordmark-name { color: #F7F2E9; }
+body.navidad .wordmark-sub { color: rgba(247, 242, 233, 0.55); }
+
+body.navidad .streak {
+  color: #F6C560;
+  background: rgba(246, 197, 96, 0.1);
+  border-color: rgba(246, 197, 96, 0.3);
+}
+
+body.navidad .section-label { color: rgba(247, 242, 233, 0.55); }
+
+body.navidad .level-chip {
+  border-color: rgba(247, 242, 233, 0.28);
+  color: rgba(247, 242, 233, 0.85);
+}
+
+body.navidad .level-chip.active {
+  background: #F6C560;
+  border-color: #F6C560;
+  color: #192433;
+  box-shadow: 0 4px 14px rgba(246, 197, 96, 0.3);
+}
+
+body.navidad .deck-progress,
+body.navidad .swipe-hint,
+body.navidad .daily-note { color: rgba(247, 242, 233, 0.55); }
+
+body.navidad .daily-date { color: #F6C560; }
+
+body.navidad .tabs {
+  background: rgba(18, 27, 39, 0.92);
+  border-top-color: rgba(247, 242, 233, 0.12);
+}
+
+body.navidad .tab { color: rgba(247, 242, 233, 0.5); }
+body.navidad .tab.active { color: #F6C560; }
+
+body.navidad .empty { color: rgba(247, 242, 233, 0.6); }
+body.navidad .empty .big { color: #F7F2E9; }
+
+body.navidad .about { color: rgba(247, 242, 233, 0.45); }
+
+body.navidad .pending-banner {
+  background: rgba(246, 197, 96, 0.1);
+  border-color: rgba(246, 197, 96, 0.3);
+  color: #F6C560;
+}
+
+body.navidad .onboard { background: #F7F2E9; }
+
+body.navidad .stack { margin-top: 94px; }
 
 @media (min-width: 640px) {
   .card { padding: 30px 34px 24px; }
