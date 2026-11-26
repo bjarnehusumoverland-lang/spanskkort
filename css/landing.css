@@ -468,6 +468,34 @@ body {
   color: #2b7de0;
 }
 
+.sheet-lead {
+  font-size: 14.5px;
+  color: var(--ink);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.sheet-qr {
+  width: 160px;
+  margin: 0 auto 12px;
+  border: 1px solid rgba(42, 38, 31, 0.14);
+  border-radius: 12px;
+  padding: 8px;
+  background: var(--cream-warm);
+}
+
+.sheet-qr img {
+  display: block;
+  width: 100%;
+  image-rendering: pixelated;
+}
+
+.sheet-alt {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+}
+
 .sheet-note {
   font-size: 12.5px;
   color: var(--ink-soft);

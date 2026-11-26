@@ -39,10 +39,10 @@
   <div class="hero-inner">
     <div class="hero-mark">
       <span class="hero-name">Sobremesas</span>
-      <span class="hero-sub">Spanske samtalekort · jule&shy;utgaven</span>
+      <span class="hero-sub">Spanske samtalekort · juleutgaven</span>
     </div>
 
-    <h1 class="hero-title">Jula er én lang <em>sobremesa</em>.</h1>
+    <h1 class="hero-title">Jula er full av <em>sobremesas</em>.</h1>
     <p class="hero-lead">Trekk et kort, tenn lysene, og bli sittende.<br>400 spanske samtalekort for praten som blir igjen rundt bordet.</p>
 
     <!-- Fotografi i juleramme: utklipte personer i illustrert vinterkveld -->
@@ -127,7 +127,7 @@
           <use href="#lue" transform="translate(830,388) scale(-1.4,1.4) rotate(-8)"/>
         </svg>
       </div>
-      <figcaption lang="es">Feliz Navidad — la sobremesa empieza aquí</figcaption>
+      <figcaption lang="es">¡Feliz Navidad! La sobremesa empieza aquí</figcaption>
       <svg class="sprig" viewBox="0 0 120 120" aria-hidden="true">
         <g stroke="#3E5641" stroke-width="3" stroke-linecap="round" fill="none">
           <path d="M20,100 C45,70 70,45 100,22"/>
@@ -180,7 +180,7 @@
 <main id="mer" class="below">
   <section class="intro">
     <h2>Praten som blir igjen rundt bordet</h2>
-    <p><i>Sobremesa</i> er det spanske ordet for tiden etter maten – når ingen har det travelt,
+    <p><i>Sobremesa</i> er det spanske ordet for tiden etter maten, når ingen har det travelt,
     kaffen blir kald og praten blir god. Denne appen er laget for akkurat det øyeblikket:
     to mennesker, ett kort, og en samtale på spansk.</p>
   </section>
@@ -195,7 +195,7 @@
         </g>
       </svg>
       <h3>400 kort for to</h3>
-      <p>100 kort på hvert nivå fra B1 til C2 – med oppfølgingsspørsmål, gloser på norsk og en liten utfordring på hvert kort.</p>
+      <p>100 kort på hvert nivå fra B1 til C2, med oppfølgingsspørsmål, gloser på norsk og en liten utfordring på hvert kort.</p>
     </div>
     <div class="feature">
       <svg class="f-icon" viewBox="0 0 64 64" aria-hidden="true">
@@ -206,7 +206,7 @@
         <ellipse cx="31" cy="57" rx="19" ry="3.2" fill="#E0D2B4"/>
       </svg>
       <h3>Dagens kort</h3>
-      <p>Ett felles kort hver dag – perfekt til frokostkaffen, gløggen eller kvelden ved peisen.</p>
+      <p>Ett felles kort hver dag. Perfekt til frokostkaffen, gløggen eller kvelden ved peisen.</p>
     </div>
     <div class="feature">
       <svg class="f-icon" viewBox="0 0 64 64" aria-hidden="true">
@@ -226,7 +226,7 @@
 
   <section class="quote">
     <blockquote lang="es">«Las mejores conversaciones nunca tienen prisa.»</blockquote>
-    <p class="quote-no">– De beste samtalene har aldri dårlig tid.</p>
+    <p class="quote-no">De beste samtalene har aldri dårlig tid.</p>
   </section>
 
   <div class="bottom-cta">
@@ -242,7 +242,12 @@
 
 <div class="sheet-backdrop" id="install-sheet" hidden>
   <div class="sheet" role="dialog" aria-label="Slik laster du ned appen">
-    <h3>Legg Sobremesas på hjemskjermen</h3>
+    <h3 id="sheet-title">Legg Sobremesas på hjemskjermen</h3>
+    <div id="qr-desktop" hidden>
+      <p class="sheet-lead">Appen er laget for mobilen. Skann med mobilkameraet, så er dere i gang:</p>
+      <div class="sheet-qr"><img src="julekort/qr.png" alt="QR-kode til sobremesas.no"></div>
+      <p class="sheet-alt">Eller installer på denne maskinen:</p>
+    </div>
     <ol class="steps" id="steps-ios" hidden>
       <li>Trykk på <strong>Del-knappen</strong>
         <svg class="share-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M12 3l-4.5 4.5M12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 11.5v8a1.5 1.5 0 0 0 1.5 1.5h10a1.5 1.5 0 0 0 1.5-1.5v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -250,10 +255,15 @@
       <li>Bla ned og velg <strong>«Legg til på Hjem-skjerm»</strong></li>
       <li>Trykk <strong>«Legg til»</strong> – ferdig! Appen ligger nå som et eget ikon</li>
     </ol>
-    <ol class="steps" id="steps-other" hidden>
-      <li>Åpne nettleserens meny <strong>(⋮ eller ⋯)</strong></li>
-      <li>Velg <strong>«Installer app»</strong> eller <strong>«Legg til på startsiden»</strong></li>
-      <li>Bekreft – appen ligger nå som et eget ikon</li>
+    <ol class="steps" id="steps-android" hidden>
+      <li>Åpne Chrome-menyen <strong>⋮</strong> oppe til høyre</li>
+      <li>Velg <strong>«Legg til på startskjermen»</strong> (eller «Installer app»)</li>
+      <li>Trykk <strong>«Installer»</strong> – appen legger seg som et eget ikon</li>
+    </ol>
+    <ol class="steps" id="steps-desktop" hidden>
+      <li>Se etter <strong>installasjonsikonet</strong> helt til høyre i adressefeltet</li>
+      <li>Klikk det og velg <strong>«Installer»</strong></li>
+      <li>Appen åpner i eget vindu og ligger nå blant programmene dine</li>
     </ol>
     <p class="sheet-note">Appen er gratis, bruker ikke pålogging og fungerer uten nett.</p>
     <button class="cta sheet-close" id="sheet-close" type="button">Den er grei</button>
@@ -263,16 +273,28 @@
 <script>
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function(){});
 
-  /* «Last ned appen» – ekte installasjon der det støttes, ellers veiledning */
+  /* «Last ned appen» – direkteinstallasjon på Android/desktop-Chrome,
+     skreddersydd veiledning ellers */
   (function () {
     var deferred = null;
+    var waiters = [];
     var buttons = [].slice.call(document.querySelectorAll(".js-install"));
     var sheet = document.getElementById("install-sheet");
 
     addEventListener("beforeinstallprompt", function (e) {
       e.preventDefault();
       deferred = e;
+      waiters.splice(0).forEach(function (fn) { fn(e); });
     });
+
+    /* Vent litt på prompten hvis den ikke har rukket å komme ennå */
+    function waitForPrompt(ms) {
+      return new Promise(function (resolve) {
+        if (deferred) return resolve(deferred);
+        var t = setTimeout(function () { resolve(null); }, ms);
+        waiters.push(function (e) { clearTimeout(t); resolve(e); });
+      });
+    }
 
     function markInstalled() {
       buttons.forEach(function (b) { b.textContent = "Installert ✓"; });
@@ -284,24 +306,50 @@
         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
     }
 
+    function isAndroid() {
+      return /Android/i.test(navigator.userAgent);
+    }
+
+    function showSheet() {
+      var ios = isIOS();
+      var android = !ios && isAndroid();
+      var desktop = !ios && !android;
+      document.getElementById("steps-ios").hidden = !ios;
+      document.getElementById("steps-android").hidden = !android;
+      document.getElementById("steps-desktop").hidden = !desktop;
+      document.getElementById("qr-desktop").hidden = !desktop;
+      document.getElementById("sheet-title").textContent =
+        desktop ? "Hent appen på mobilen" : "Legg Sobremesas på hjemskjermen";
+      sheet.hidden = false;
+    }
+
     buttons.forEach(function (btn) {
       btn.addEventListener("click", function () {
         if (matchMedia("(display-mode: standalone)").matches) {
           location.href = "app.html";
           return;
         }
-        if (deferred) {
-          deferred.prompt();
-          deferred.userChoice.then(function (r) {
-            if (r.outcome === "accepted") markInstalled();
-            deferred = null;
-          });
+        /* Android: bruk den ekte install-prompten, med inntil 1,5 s
+           tålmodighet. Mac/PC og iPhone får arket (QR på desktop). */
+        if (!isAndroid()) {
+          showSheet();
           return;
         }
-        var ios = isIOS();
-        document.getElementById("steps-ios").hidden = !ios;
-        document.getElementById("steps-other").hidden = ios;
-        sheet.hidden = false;
+        var wait = deferred ? Promise.resolve(deferred) : waitForPrompt(1500);
+        var label = btn.textContent;
+        if (!deferred) btn.textContent = "Et øyeblikk …";
+        wait.then(function (p) {
+          btn.textContent = label;
+          if (p) {
+            p.prompt();
+            p.userChoice.then(function (r) {
+              if (r.outcome === "accepted") markInstalled();
+              deferred = null;
+            });
+          } else {
+            showSheet();
+          }
+        });
       });
     });
 

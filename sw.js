@@ -1,11 +1,12 @@
 /* Sobremesas · service worker */
-const VERSION = "sobremesas-v8";
+const VERSION = "sobremesas-v10";
 const SHELL = [
   "./",
   "index.html",
   "app.html",
   "css/landing.css",
   "assets/familie-utklipp.png",
+  "julekort/qr.png",
   "css/style.css",
   "js/app.js",
   "js/data/b1.js",
