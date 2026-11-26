@@ -23,6 +23,7 @@
     queues: {},        // per nivå: gjenstående indekser (stokket)
     current: {},       // per nivå: indeksen som vises nå
     history: {},       // per nivå: tidligere viste kort (for å bla tilbake)
+    historySeeded: {}, // per nivå: om eldre sette kort er lagt inn i historikken
     seenCount: {},     // per nivå: antall sett totalt
     favs: [],          // ["B1-12", ...]
     streak: { count: 0, last: "" },
@@ -136,23 +137,31 @@
   }
 
   function drawCard(level, silent) {
+    const before = state.queues[level];
+    const reshuffled = Array.isArray(before) && before.length === 0;
     ensureQueue(level);
+    const q = state.queues[level];
+    // aldri samme kort to ganger på rad rett etter en omstokking
+    if (q.length > 1 && q[0] === state.current[level]) q.push(q.shift());
+
     if (typeof state.current[level] === "number") {
       const h = state.history[level] = state.history[level] || [];
       h.push(state.current[level]); // full historikk – bla tilbake helt til starten
+      if (h.length > 1000) h.shift();
     }
-    const idx = state.queues[level].shift();
+    const idx = q.shift();
     state.current[level] = idx;
     state.seenCount[level] = (state.seenCount[level] || 0) + 1;
-    if (state.queues[level].length === 0 && !silent) {
-      // neste trekk stokker på nytt
-    }
     touchStreak();
     save();
-    if (!silent && (state.seenCount[level] % DECKS[level].length === 0)) {
+    if (reshuffled && !silent) {
       toast("Dere har vært gjennom alle " + DECKS[level].length + " kortene – stokker på nytt!");
     }
     return idx;
+  }
+
+  function canGoBack(level) {
+    return (state.history[level] || []).length > 0;
   }
 
   /* Bla tilbake: forrige kort hentes fram igjen, og kortet man
@@ -160,14 +169,30 @@
   function goBack(level) {
     const h = state.history[level] || [];
     if (!h.length) return false;
-    ensureQueue(level);
+    if (!Array.isArray(state.queues[level])) state.queues[level] = [];
     if (typeof state.current[level] === "number") {
       state.queues[level].unshift(state.current[level]);
     }
     state.current[level] = h.pop();
-    if (state.seenCount[level]) state.seenCount[level]--;
+    if (state.seenCount[level] > 1) state.seenCount[level]--;
     save();
     return true;
+  }
+
+  /* Engangsmigrering: kort som ble sett før historikken fantes, legges
+     inn bakerst i historikken (rekkefølgen er ukjent), så man kan bla
+     tilbake gjennom alt man har sett */
+  function seedHistory(level) {
+    state.historySeeded = state.historySeeded || {};
+    if (state.historySeeded[level]) return;
+    state.historySeeded[level] = true;
+    const q = state.queues[level];
+    if (!Array.isArray(q) || typeof state.current[level] !== "number") return;
+    const h = state.history[level] || [];
+    const known = new Set([...q, ...h, state.current[level]]);
+    const older = [];
+    for (let i = 0; i < DECKS[level].length; i++) if (!known.has(i)) older.push(i);
+    state.history[level] = older.concat(h);
   }
 
   function touchStreak() {
@@ -317,15 +342,26 @@
     if (backBtn) backBtn.addEventListener("click", () => backCard(card));
 
     if (!opts.noSwipe) {
-      let x0 = null, y0 = null, dragging = false;
+      let x0 = null, y0 = null, dragging = false, pid = null, lastDx = 0;
+
+      // Kortet glir mykt tilbake på plass
+      const snapBack = () => {
+        card.classList.remove("dragging");
+        card.style.transition = "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease";
+        card.style.transform = "";
+        card.style.opacity = "";
+        setTimeout(() => { card.style.transition = ""; }, 320);
+      };
 
       const onMove = (e) => {
-        if (x0 === null) return;
+        if (x0 === null || e.pointerId !== pid) return;
         const dx = e.clientX - x0;
         const dy = e.clientY - y0;
         if (!dragging) {
           if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
             dragging = true;
+            // inngangsanimasjonen ville ellers overstyrt draget
+            card.style.animation = "none";
             card.classList.add("dragging");
           } else if (Math.abs(dy) > 16) {
             cleanup(); // brukeren ruller siden
@@ -333,46 +369,59 @@
           }
         }
         if (dragging) {
-          card.style.transform = "translateX(" + dx + "px) rotate(" + dx / 50 + "deg)";
-          card.style.opacity = String(Math.max(0.35, 1 - Math.abs(dx) / 450));
+          lastDx = dx;
+          // «gummistrikk» mot høyre når det ikke finnes noe kort å gå tilbake til
+          const shown = dx > 0 && !canGoBack(state.level) ? dx * 0.25 : dx;
+          card.style.transform = "translateX(" + shown + "px) rotate(" + shown / 50 + "deg)";
+          card.style.opacity = String(Math.max(0.35, 1 - Math.abs(shown) / 450));
         }
       };
 
       const onUp = (e) => {
-        const dx = x0 === null ? 0 : e.clientX - x0;
+        if (e.pointerId !== pid) return;
         const wasDragging = dragging;
-        card.classList.remove("dragging");
+        const dx = lastDx;
         cleanup();
         if (wasDragging && dx < -70) {
+          card.classList.remove("dragging");
           nextCard(card); // spøkelset starter fra der fingeren slapp
-        } else if (wasDragging && dx > 70) {
+        } else if (wasDragging && dx > 70 && canGoBack(state.level)) {
+          card.classList.remove("dragging");
           backCard(card); // sveip høyre = forrige kort
         } else {
-          // myk tilbakesprett i stedet for brått hopp
-          card.style.transition = "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease";
-          card.style.transform = "";
-          card.style.opacity = "";
-          setTimeout(() => { card.style.transition = ""; }, 320);
+          if (wasDragging && dx > 70) toast("Dere er ved starten av bunken");
+          snapBack();
         }
+      };
+
+      // Avbrutt gest (f.eks. at nettleseren tar over for rulling): aldri kortbytte
+      const onCancel = (e) => {
+        if (e.pointerId !== pid) return;
+        cleanup();
+        snapBack();
       };
 
       function cleanup() {
         x0 = y0 = null;
         dragging = false;
+        pid = null;
+        lastDx = 0;
         document.removeEventListener("pointermove", onMove);
         document.removeEventListener("pointerup", onUp);
-        document.removeEventListener("pointercancel", onUp);
+        document.removeEventListener("pointercancel", onCancel);
       }
 
       card.addEventListener("pointerdown", (e) => {
+        if (!e.isPrimary) return; // én finger om gangen
         if (e.target.closest("button") || (e.pointerType === "mouse" && e.button !== 0)) return;
+        cleanup(); // rydd bort eventuell gammel, uavsluttet gest
         card.style.transition = "";
+        pid = e.pointerId;
         x0 = e.clientX;
         y0 = e.clientY;
-        dragging = false;
         document.addEventListener("pointermove", onMove);
         document.addEventListener("pointerup", onUp);
-        document.addEventListener("pointercancel", onUp);
+        document.addEventListener("pointercancel", onCancel);
       });
     }
   }
@@ -384,31 +433,44 @@
     if (!cardEl.isConnected) return;
     clearInterval(timerInterval);
 
-    const rect = cardEl.getBoundingClientRect();
+    // Mål på den utransformerte plassen (stabelen), ikke på det roterte
+    // kortets omskrevne boks – ellers hopper spøkelset i størrelse.
+    const view = $("#view");
+    const vr = view.getBoundingClientRect();
+    const box = (cardEl.closest(".stack") || cardEl).getBoundingClientRect();
+
+    // Laget klipper spøkelset til innholdsflaten, så det aldri
+    // tegnes over topptekst eller menylinje.
+    const layer = document.createElement("div");
+    layer.style.cssText =
+      "position:fixed;left:0;right:0;top:" + vr.top + "px;height:" + vr.height +
+      "px;overflow:hidden;pointer-events:none;z-index:60;";
+
     const ghost = cardEl.cloneNode(true);
-    ghost.style.position = "fixed";
-    ghost.style.left = rect.left + "px";
-    ghost.style.top = rect.top + "px";
-    ghost.style.width = rect.width + "px";
+    ghost.classList.remove("dragging");
+    ghost.style.position = "absolute";
+    ghost.style.left = box.left + "px";
+    ghost.style.top = (box.top - vr.top) + "px";
+    ghost.style.width = cardEl.offsetWidth + "px";
     ghost.style.margin = "0";
-    ghost.style.zIndex = "60";
-    ghost.style.pointerEvents = "none";
     ghost.style.animation = "none";
-    ghost.style.transform = "none";
+    ghost.style.transition = "none";
+    ghost.style.transform = cardEl.style.transform || "none"; // fortsett fra slippunktet
     ghost.style.opacity = cardEl.style.opacity || "1";
-    ghost.style.transition = "transform 0.22s ease-in, opacity 0.22s ease-in";
-    document.body.appendChild(ghost);
+    layer.appendChild(ghost);
+    document.body.appendChild(layer);
 
     mutate();
     renderTab();
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        ghost.style.transition = "transform 0.22s ease-in, opacity 0.22s ease-in";
         ghost.style.transform = "translateX(" + (dir * window.innerWidth * 1.1) + "px) rotate(" + (dir * 8) + "deg)";
         ghost.style.opacity = "0";
       });
     });
-    setTimeout(() => ghost.remove(), 280);
+    setTimeout(() => layer.remove(), 300);
   }
 
   function nextCard(cardEl) {
@@ -416,8 +478,7 @@
   }
 
   function backCard(cardEl) {
-    const h = state.history[state.level] || [];
-    if (!h.length) {
+    if (!canGoBack(state.level)) {
       toast("Dere er ved starten av bunken");
       return;
     }
@@ -658,6 +719,9 @@
       state.queues = {};
       state.current = {};
       state.seenCount = {};
+      state.history = {};
+      state.historySeeded = {};
+      LEVELS.forEach((l) => { state.historySeeded[l] = true; });
       drawCard(state.level, true);
       save();
       renderTab();
@@ -900,9 +964,11 @@
 
   if (location.hash === "#daily") tab = "daily";
 
+  LEVELS.forEach(seedHistory);
   ensureQueue(state.level);
   renderStreak();
   renderTab();
+  save();
   mirrorToSW();
   scheduleNotification();
   if (state.notif.on) registerPeriodicSync();
@@ -912,7 +978,9 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       scheduleNotification();
-      if (tab === "deck") renderTab(); // oppdater ev. banner
+      // Tegn bare på nytt når banneret faktisk skal dukke opp – ellers
+      // ville kortet blitt bygget om (og gester avbrutt) ved hver retur
+      if (tab === "deck" && pendingDaily() && !$("#pending-banner")) renderTab();
     }
   });
 })();
