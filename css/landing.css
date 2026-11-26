@@ -20,6 +20,11 @@
 
 * { box-sizing: border-box; }
 
+button, a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 html { scroll-behavior: smooth; }
 
 body {

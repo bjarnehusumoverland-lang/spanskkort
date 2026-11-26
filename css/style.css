@@ -26,6 +26,13 @@
 
 * { box-sizing: border-box; }
 
+/* iOS: uten denne venter Safari på mulig dobbelttrykk-zoom og
+   sluker raske trykk – med den fyrer hvert trykk umiddelbart */
+button, a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 html { color-scheme: light; }
 
 body {
