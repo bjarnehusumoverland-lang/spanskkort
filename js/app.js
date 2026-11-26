@@ -342,7 +342,16 @@
     if (backBtn) backBtn.addEventListener("click", () => backCard(card));
 
     if (!opts.noSwipe) {
-      let x0 = null, y0 = null, dragging = false, pid = null, lastDx = 0;
+      let x0 = null, y0 = null, t0 = 0, dragging = false, pid = null, lastDx = 0, lastDy = 0;
+      let suppressClick = false;
+
+      // Et sveip som startet på en knapp skal ikke også telle som et trykk
+      card.addEventListener("click", (e) => {
+        if (!suppressClick) return;
+        suppressClick = false;
+        e.stopPropagation();
+        e.preventDefault();
+      }, true);
 
       // Kortet glir mykt tilbake på plass
       const snapBack = () => {
@@ -360,6 +369,7 @@
         if (!dragging) {
           if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
             dragging = true;
+            suppressClick = true;
             // inngangsanimasjonen ville ellers overstyrt draget
             card.style.animation = "none";
             card.classList.add("dragging");
@@ -368,8 +378,9 @@
             return;
           }
         }
+        lastDx = dx;
+        lastDy = dy;
         if (dragging) {
-          lastDx = dx;
           // «gummistrikk» mot høyre når det ikke finnes noe kort å gå tilbake til
           const shown = dx > 0 && !canGoBack(state.level) ? dx * 0.25 : dx;
           card.style.transform = "translateX(" + shown + "px) rotate(" + shown / 50 + "deg)";
@@ -379,17 +390,31 @@
 
       const onUp = (e) => {
         if (e.pointerId !== pid) return;
-        const wasDragging = dragging;
-        const dx = lastDx;
+        // Der fingeren slapp er fasit. Bevegelseshendelsene kommer for
+        // sjelden når telefonen er opptatt med å tegne forrige kortbytte.
+        const hasUpPos = !(e.clientX === 0 && e.clientY === 0);
+        const dx = hasUpPos ? e.clientX - x0 : lastDx;
+        const dy = hasUpPos ? e.clientY - y0 : lastDy;
+        const dt = Math.max(1, performance.now() - t0);
         cleanup();
-        if (wasDragging && dx < -70) {
+
+        const horizontal = Math.abs(dx) > Math.abs(dy) * 1.2;
+        const far = Math.abs(dx) > 70;
+        // rask, kort flikk teller også som et sveip
+        const flick = Math.abs(dx) > 30 && dt < 350 && Math.abs(dx) / dt > 0.3;
+        const swipe = horizontal && (far || flick);
+
+        if (swipe) suppressClick = true;
+        // et eventuelt klikk kommer rett etter slippet – etterpå skal knappene virke som vanlig
+        setTimeout(() => { suppressClick = false; }, 400);
+        if (swipe && dx < 0) {
           card.classList.remove("dragging");
           nextCard(card); // spøkelset starter fra der fingeren slapp
-        } else if (wasDragging && dx > 70 && canGoBack(state.level)) {
+        } else if (swipe && dx > 0 && canGoBack(state.level)) {
           card.classList.remove("dragging");
           backCard(card); // sveip høyre = forrige kort
         } else {
-          if (wasDragging && dx > 70) toast("Dere er ved starten av bunken");
+          if (swipe && dx > 0) toast("Dere er ved starten av bunken");
           snapBack();
         }
       };
@@ -398,6 +423,7 @@
       const onCancel = (e) => {
         if (e.pointerId !== pid) return;
         cleanup();
+        suppressClick = false;
         snapBack();
       };
 
@@ -406,6 +432,7 @@
         dragging = false;
         pid = null;
         lastDx = 0;
+        lastDy = 0;
         document.removeEventListener("pointermove", onMove);
         document.removeEventListener("pointerup", onUp);
         document.removeEventListener("pointercancel", onCancel);
@@ -413,12 +440,16 @@
 
       card.addEventListener("pointerdown", (e) => {
         if (!e.isPrimary) return; // én finger om gangen
-        if (e.target.closest("button") || (e.pointerType === "mouse" && e.button !== 0)) return;
+        if (e.pointerType === "mouse" && e.button !== 0) return;
+        // Sveip kan starte hvor som helst på kortet, også på knappene:
+        // «Nytt kort»-knappen dekker hele bredden der tommelen hviler.
         cleanup(); // rydd bort eventuell gammel, uavsluttet gest
+        suppressClick = false;
         card.style.transition = "";
         pid = e.pointerId;
         x0 = e.clientX;
         y0 = e.clientY;
+        t0 = performance.now();
         document.addEventListener("pointermove", onMove);
         document.addEventListener("pointerup", onUp);
         document.addEventListener("pointercancel", onCancel);
