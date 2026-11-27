@@ -1,0 +1,24 @@
+# Sobremesas · push-tjenesten
+# Publiseres med:  npx wrangler deploy   (kjørt fra push-mappen)
+
+name = "sobremesas-push"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+# Kjør hvert minutt og send til dem som har valgt akkurat det minuttet
+[triggers]
+crons = ["* * * * *"]
+
+# Her lagres push-adresse og valgt tidspunkt for hver telefon.
+# Lag lageret med:  npx wrangler kv namespace create SUBS
+# og lim inn id-en du får tilbake.
+[[kv_namespaces]]
+binding = "SUBS"
+id = "LIM_INN_ID_HER"
+
+[vars]
+VAPID_SUBJECT = "https://sobremesas.no"
+ALLOWED_ORIGINS = "https://sobremesas.no,https://www.sobremesas.no,http://localhost:4173"
+
+# Den private nøkkelen er en hemmelighet og ligger ikke her. Last den opp med:
+#   npx wrangler secret put VAPID_PRIVATE_KEY < .vapid-privat.json

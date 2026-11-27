@@ -27,7 +27,9 @@
     seenCount: {},     // per nivå: antall sett totalt
     favs: [],          // ["B1-12", ...]
     streak: { count: 0, last: "" },
-    notif: { on: false, time: "09:00", days: [0, 1, 2, 3, 4] }, // man–fre (0 = mandag)
+    // days: man–fre (0 = mandag). push: varseltjenesten kjenner denne telefonen,
+    // pushSig: hvilke valg tjenesten sist fikk, pushAt: når
+    notif: { on: false, time: "09:00", days: [0, 1, 2, 3, 4], push: false, pushSig: "", pushAt: 0 },
     notifiedDate: "",
   };
 
@@ -79,7 +81,7 @@
       const cache = await caches.open("sobremesa-state");
       await cache.put(
         "/__state",
-        new Response(JSON.stringify({ notif: state.notif, level: state.level, notifiedDate: state.notifiedDate }), {
+        new Response(JSON.stringify({ notif: state.notif, level: state.level, notifiedDate: state.notifiedDate, tz: timeZone() }), {
           headers: { "Content-Type": "application/json" },
         })
       );
@@ -616,11 +618,16 @@
   function settingsView() {
     const n = state.notif;
     const perm = "Notification" in window ? Notification.permission : "unsupported";
+    // Statusen skal si hva som faktisk vil skje, ikke love mer enn appen holder
     let status = "";
     if (!n.on) status = "";
-    else if (perm === "granted") status = `<div class="notif-status">Varsler er på. Neste: ${nextTriggerText()}.<br>På iPhone/iPad må appen ligge på hjemskjermen (Del-knappen → «Legg til på Hjem-skjerm») for at varsler skal nå fram.</div>`;
-    else if (perm === "denied") status = `<div class="notif-status warn">Nettleseren blokkerer varsler for denne siden. Bruk kalender-påminnelsen under i stedet – den virker alltid.</div>`;
-    else status = `<div class="notif-status">Trykk på bryteren igjen for å gi tillatelse til varsler.</div>`;
+    else if (perm === "denied") status = `<div class="notif-status warn">Nettleseren blokkerer varsler for denne siden. Bruk kalenderpåminnelsen under i stedet.</div>`;
+    else if (perm !== "granted") status = `<div class="notif-status">Trykk på bryteren igjen for å gi tillatelse til varsler.</div>`;
+    else if (pushInSync()) status = `<div class="notif-status">Varslene sendes automatisk, også når appen er lukket. Neste: ${nextTriggerText()}.</div>`;
+    else if (n.push) status = `<div class="notif-status">Melder inn endringen til varseltjenesten. Uten nett prøver appen igjen senere.</div>`;
+    else if (pushConfigured() && !pushSupported() && isIOS()) status = `<div class="notif-status warn">På iPhone må appen ligge på hjemskjermen for å kunne varsle. Trykk Del-knappen i Safari, velg «Legg til på Hjem-skjerm», åpne appen derfra og slå på varsler der.</div>`;
+    else if (pushConfigured() && pushSupported()) status = `<div class="notif-status warn">Fikk ikke kontakt med varseltjenesten. Inntil videre vises varsler bare mens appen er åpen. Appen prøver igjen.</div>`;
+    else status = `<div class="notif-status warn">Varsler vises bare mens appen er åpen. Bruk kalenderpåminnelsen under for å bli minnet på når appen er lukket.</div>`;
 
     return `
       <div class="section-label">Nivå</div>
@@ -645,7 +652,7 @@
         ${status}
         <button class="btn-secondary" id="test-notif-btn">🔔 Send et testvarsel nå</button>
         <button class="btn-secondary" id="ics-btn">📅 Legg påminnelsen i kalenderen</button>
-        <div class="notif-status">Kalender-påminnelsen er den sikreste måten – den virker på alle telefoner, uansett.</div>
+        <div class="notif-status">Kalenderpåminnelsen virker på alle telefoner, uavhengig av varslene over.</div>
       </div>
 
       <div class="section-label">Fremdrift</div>
@@ -729,18 +736,20 @@
         }
         const perm = await Notification.requestPermission();
         state.notif.on = perm === "granted";
+        save();
         if (perm === "granted") {
-          toast("Varsler er på ☕");
-          registerPeriodicSync();
           requestPersistentStorage();
+          const viaService = await syncPush(true);
+          toast(viaService ? "Varsler er på – de kommer også når appen er lukket ☕" : "Varsler er på ☕");
         } else {
           toast("Fikk ikke tillatelse – prøv kalenderknappen i stedet");
         }
       } else {
         state.notif.on = false;
+        save();
+        await unsubscribePush();
       }
-      save();
-      scheduleNotification();
+      refreshNotifMode();
       renderTab();
     });
 
@@ -749,6 +758,7 @@
       state.notif.time = e.target.value;
       save();
       scheduleNotification();
+      queuePushSync();
       renderTab();
     });
 
@@ -763,6 +773,7 @@
         b.setAttribute("aria-pressed", b.classList.contains("on"));
         save();
         scheduleNotification();
+        queuePushSync();
       })
     );
 
@@ -806,9 +817,158 @@
     return days[d.getDay()] + " kl. " + state.notif.time;
   }
 
+  /* ── Push: varsler som kommer også når appen er lukket ──
+     En nettapp kan ikke sette en lokal alarm, så varselet må sendes
+     utenfra. Tjenesten (push/ i repoet) sender et signal på valgt
+     minutt, og service workeren viser dagens varsel. */
+
+  function pushConfigured() {
+    return !!(self.PUSH && self.PUSH.url && self.PUSH.publicKey);
+  }
+
+  function pushSupported() {
+    return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  }
+
+  function timeZone() {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Oslo";
+    } catch (e) {
+      return "Europe/Oslo";
+    }
+  }
+
+  function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
+  function b64uToBytes(s) {
+    const bin = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  /* Telefonens push-abonnement. Lages ved behov, og byttes hvis nøkkelen er ny. */
+  async function pushSubscription(create) {
+    const reg = await navigator.serviceWorker.ready;
+    const key = b64uToBytes(self.PUSH.publicKey);
+    let sub = await reg.pushManager.getSubscription();
+    if (sub && sub.options && sub.options.applicationServerKey) {
+      const cur = new Uint8Array(sub.options.applicationServerKey);
+      const same = cur.length === key.length && cur.every((b, i) => b === key[i]);
+      if (!same) {
+        await sub.unsubscribe();
+        sub = null;
+      }
+    }
+    if (!sub && create) {
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+    }
+    return sub;
+  }
+
+  async function pushPost(path, body) {
+    const res = await fetch(self.PUSH.url.replace(/\/+$/, "") + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(path + " " + res.status);
+    return res.json();
+  }
+
+  function pushSignature(endpoint) {
+    return [endpoint, state.notif.time, state.notif.days.join(""), timeZone()].join("|");
+  }
+
+  /* Vet tjenesten om denne telefonen og de valgene som gjelder nå? */
+  function pushInSync() {
+    const sig = state.notif.pushSig || "";
+    return !!state.notif.push && sig.endsWith("|" + [state.notif.time, state.notif.days.join(""), timeZone()].join("|"));
+  }
+
+  /* Meld telefonen og gjeldende valg inn til tjenesten. Feiler det, står
+     forrige innmelding ved lag, og appen prøver igjen senere. */
+  async function syncPush(force) {
+    if (!pushConfigured() || !pushSupported()) return false;
+    if (!state.notif.on || Notification.permission !== "granted") return false;
+    try {
+      const sub = await pushSubscription(true);
+      const sig = pushSignature(sub.endpoint);
+      const fresh = Date.now() - (state.notif.pushAt || 0) < 7 * 24 * 3600 * 1000;
+      if (!force && state.notif.push && state.notif.pushSig === sig && fresh) return true;
+      await pushPost("/subscribe", {
+        endpoint: sub.endpoint,
+        time: state.notif.time,
+        days: state.notif.days,
+        tz: timeZone(),
+      });
+      state.notif.push = true;
+      state.notif.pushSig = sig;
+      state.notif.pushAt = Date.now();
+      save();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function unsubscribePush() {
+    try {
+      if (pushConfigured() && pushSupported()) {
+        const sub = await pushSubscription(false);
+        if (sub) {
+          await pushPost("/unsubscribe", { endpoint: sub.endpoint }).catch(() => {});
+          await sub.unsubscribe();
+        }
+      }
+    } catch (e) { /* tjenesten rydder selv når telefonen ikke lenger svarer */ }
+    state.notif.push = false;
+    state.notif.pushSig = "";
+    state.notif.pushAt = 0;
+    save();
+  }
+
+  /* Ved oppstart, retur til appen og når nettet kommer tilbake: sørg for
+     at tjenesten har riktige opplysninger. Gjør ingenting når alt stemmer. */
+  function resyncPush() {
+    if (!state.notif.on) return;
+    const before = pushInSync();
+    syncPush().then(() => {
+      refreshNotifMode();
+      if (tab === "settings" && pushInSync() !== before) renderTab();
+    });
+  }
+
+  /* Etter endret klokkeslett eller dager: vent til brukeren er ferdig med å trykke */
+  let pushSyncTimer = null;
+  function queuePushSync() {
+    clearTimeout(pushSyncTimer);
+    pushSyncTimer = setTimeout(async () => {
+      await syncPush(true);
+      refreshNotifMode();
+      if (tab === "settings") renderTab();
+    }, 1200);
+  }
+
+  /* Velg varselvei: tjenesten når den kjenner telefonen, ellers reserven
+     som bare virker mens appen er åpen */
+  async function refreshNotifMode() {
+    scheduleNotification();
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      if (!("periodicSync" in reg)) return;
+      if (state.notif.on && !pushInSync()) registerPeriodicSync();
+      else await reg.periodicSync.unregister("sobremesa-daily");
+    } catch (e) { /* støttes ikke – greit */ }
+  }
+
   function scheduleNotification() {
     clearTimeout(notifTimeout);
     if (!state.notif.on || !("Notification" in window) || Notification.permission !== "granted") return;
+    if (pushInSync()) return; // tjenesten sender varselet; to veier ville gitt to varsler
     const d = nextTrigger();
     if (!d) return;
     const ms = Math.min(d.getTime() - Date.now(), 2147000000);
@@ -854,6 +1014,23 @@
       toast("Varsler er blokkert – sjekk nettleserens innstillinger");
       return;
     }
+
+    // Når tjenesten kjenner telefonen, går testen samme vei som de planlagte
+    // varslene: tjenesten → push-nettverket → telefonen. Da tester den det
+    // som faktisk skal virke når appen er lukket.
+    if (pushInSync()) {
+      try {
+        const sub = await pushSubscription(false);
+        const res = sub ? await pushPost("/test", { endpoint: sub.endpoint }) : { ok: false };
+        toast(res.ok
+          ? "Testvarsel bestilt fra varseltjenesten – det kommer om noen sekunder"
+          : "Varseltjenesten fikk ikke levert testvarselet");
+      } catch (e) {
+        toast("Fikk ikke kontakt med varseltjenesten");
+      }
+      return;
+    }
+
     const v = (self.VARSLER || [])[Math.floor(Math.random() * (self.VARSLER || []).length)];
     try {
       const reg = await navigator.serviceWorker.getRegistration();
@@ -864,7 +1041,7 @@
           badge: "icons/icon-192.png",
           data: { url: "./app.html#daily" },
         });
-        toast("Testvarsel sendt – sjekk varslingssenteret");
+        toast("Testvarsel vist. Planlagte varsler vises bare mens appen er åpen.");
       }
     } catch (e) {
       toast("Fikk ikke sendt varsel her – prøv fra installert app");
@@ -1025,17 +1202,20 @@
   renderTab();
   save();
   mirrorToSW();
-  scheduleNotification();
-  if (state.notif.on) registerPeriodicSync();
+  refreshNotifMode();
+  resyncPush();
   if (matchMedia("(display-mode: standalone)").matches || state.notif.on) requestPersistentStorage();
   if (!state.onboarded) showOnboarding();
 
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       scheduleNotification();
+      resyncPush();
       // Tegn bare på nytt når banneret faktisk skal dukke opp – ellers
       // ville kortet blitt bygget om (og gester avbrutt) ved hver retur
       if (tab === "deck" && pendingDaily() && !$("#pending-banner")) renderTab();
     }
   });
+
+  window.addEventListener("online", resyncPush);
 })();

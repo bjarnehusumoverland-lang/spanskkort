@@ -30,17 +30,47 @@ appen er ren HTML/CSS/JS uten byggesteg.)
 ## Varsler
 
 Under **Mer → Påminnelser** velger man klokkeslett og ukedager for «nytt kort»-varsel.
-Tre mekanismer, i prioritert rekkefølge:
 
-1. **Kalenderpåminnelse (.ics)** – den sikreste. Knappen genererer en gjentakende
-   kalenderhendelse med valgt tid/dager som virker på alle telefoner.
-2. **Web-varsler** – vises når appen er installert/åpen. På iPhone krever dette at
-   appen er lagt til på hjemskjermen (Del → «Legg til på Hjem-skjerm», iOS 16.4+).
-3. **Periodic Background Sync** – ekte bakgrunnsvarsler på Android/Chrome når appen
-   er installert som PWA.
+En nettapp kan ikke selv sette en alarm på telefonen. For at varselet skal komme når
+appen er lukket, må det sendes utenfra. Derfor finnes det tre veier:
+
+1. **Push-tjenesten** (`push/`) sender et signal til telefonen på valgt minutt, og
+   appen viser dagens varsel. Virker på Android, og på iPhone når appen ligger på
+   hjemskjermen (iOS 16.4 eller nyere). Krever at tjenesten er publisert, se under.
+2. **Uten tjenesten** vises varsler bare mens appen er åpen. Innstillingene sier
+   tydelig fra når det er slik.
+3. **Kalenderpåminnelse (.ics)** virker på alle telefoner uten noen tjeneste. Knappen
+   lager en gjentakende kalenderhendelse med valgt tid og dager.
 
 Hvis et varsel «gikk tapt» (telefonen var av e.l.), viser appen et banner om at dagens
 kort venter neste gang den åpnes.
+
+### Push-tjenesten
+
+Tjenesten er en liten Cloudflare Worker på gratisnivået. Den lagrer én ting per
+telefon: push-adressen fra nettleseren, valgt klokkeslett, ukedager og tidssone.
+Ingen navn, e-postadresser eller annet. Hvert minutt sjekker den hvem som skal ha
+varsel, og sender et tomt signal. Selve varselteksten velges på telefonen.
+
+Publisere første gang (krever en gratis Cloudflare-konto):
+
+```bash
+cd push
+npx wrangler login
+npx wrangler kv namespace create SUBS      # lim id-en inn i wrangler.toml
+npx wrangler secret put VAPID_PRIVATE_KEY < .vapid-privat.json
+npx wrangler deploy
+```
+
+`deploy` skriver ut adressen til tjenesten. Lim den inn som `url` i
+`js/push-config.js`, og publiser appen på nytt.
+
+Nøkkelparet lages med `node push/lag-nokler.mjs`. Den private nøkkelen ligger i
+`push/.vapid-privat.json`, som er utelatt fra git, og hos Cloudflare som hemmelighet.
+Tjenesten testes lokalt med `node push/test.mjs`.
+
+Grenser på gratisnivået: rundt 45 varsler på samme minutt. Det holder for familien
+og en liten test, men må ses på igjen ved mange brukere.
 
 ## Julekort til utskrift
 
@@ -88,11 +118,15 @@ assets/familie.jpg    – forsidebildet
 app.html              – appskall
 css/style.css         – design (Fraunces + Inter, varm papir-palett)
 js/app.js             – all logikk (kortstokk, varsler, ics, tilstand)
+js/varsler.js         – varseltekstene
+js/push-config.js     – adresse og offentlig nøkkel for push-tjenesten
 js/data/{b1,b2,c1,c2}.js – 4 × 100 kort
-sw.js                 – offline-cache + bakgrunnsvarsler
+sw.js                 – offline-cache, mottak av push og visning av varsler
 manifest.webmanifest  – PWA-manifest
 icons/                – appikoner
+push/                 – push-tjenesten (Cloudflare Worker), nøkkelskript og tester
 ```
 
-Ingen avhengigheter, ingen sporing, ingen server – all tilstand ligger i `localStorage`
-på telefonen.
+Appen har ingen avhengigheter og ingen sporing. Kort, fremdrift og favoritter ligger
+bare i `localStorage` på telefonen. Det eneste som lagres utenfor telefonen er
+push-adressen og varseltidspunktet, og bare hvis man slår på varsler.

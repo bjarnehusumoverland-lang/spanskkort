@@ -1,5 +1,5 @@
 /* Sobremesas · service worker */
-const VERSION = "sobremesas-v25";
+const VERSION = "sobremesas-v26";
 const SHELL = [
   "./",
   "index.html",
@@ -12,6 +12,7 @@ const SHELL = [
   "css/style.css",
   "js/app.js",
   "js/varsler.js",
+  "js/push-config.js",
   "js/data/b1.js",
   "js/data/b2.js",
   "js/data/c1.js",
@@ -23,7 +24,7 @@ const SHELL = [
   "icons/apple-touch-icon.png",
 ];
 
-importScripts("js/data/b1.js", "js/data/b2.js", "js/data/c1.js", "js/data/c2.js", "js/varsler.js");
+importScripts("js/data/b1.js", "js/data/b2.js", "js/data/c1.js", "js/data/c2.js", "js/varsler.js", "js/push-config.js");
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
@@ -125,6 +126,64 @@ async function maybeNotify() {
 
 self.addEventListener("periodicsync", (e) => {
   if (e.tag === "sobremesa-daily") e.waitUntil(maybeNotify());
+});
+
+/* ── Push fra varseltjenesten: virker også når appen er lukket ──
+   Signalet har ikke noe innhold. Det betyr bare «nå er det tid», og
+   dagens varseltekst velges her. Hvert push MÅ vise et varsel, ellers
+   trekker iOS tilbake tillatelsen. */
+
+async function markNotifiedToday() {
+  try {
+    const cache = await caches.open("sobremesa-state");
+    const res = await cache.match("/__state");
+    if (!res) return;
+    const st = await res.json();
+    st.notifiedDate = todayStr();
+    await cache.put("/__state", new Response(JSON.stringify(st), { headers: { "Content-Type": "application/json" } }));
+  } catch (e) { /* ignorer */ }
+}
+
+self.addEventListener("push", (e) => {
+  const varsler = self.VARSLER || [];
+  const v = varsler[hashStr(todayStr()) % varsler.length] || { t: "☕ Dagens spanskkort er klart", b: "" };
+  e.waitUntil(
+    self.registration.showNotification(v.t, {
+      body: v.b,
+      icon: "icons/icon-192.png",
+      badge: "icons/icon-192.png",
+      tag: "sobremesa-daily",
+      renotify: true,
+      data: { url: "./app.html#daily" },
+    }).then(markNotifiedToday)
+  );
+});
+
+/* Push-tjenesten kan bytte ut telefonens adresse. Meld inn den nye. */
+self.addEventListener("pushsubscriptionchange", (e) => {
+  e.waitUntil((async () => {
+    try {
+      const cfg = self.PUSH || {};
+      if (!cfg.url || !cfg.publicKey) return;
+      const cache = await caches.open("sobremesa-state");
+      const res = await cache.match("/__state");
+      if (!res) return;
+      const st = await res.json();
+      if (!st.notif || !st.notif.on) return;
+
+      let sub = e.newSubscription;
+      if (!sub) {
+        const bin = atob(cfg.publicKey.replace(/-/g, "+").replace(/_/g, "/"));
+        const key = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+        sub = await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+      }
+      await fetch(cfg.url.replace(/\/+$/, "") + "/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint: sub.endpoint, time: st.notif.time, days: st.notif.days, tz: st.tz || "Europe/Oslo" }),
+      });
+    } catch (err) { /* appen melder inn på nytt neste gang den åpnes */ }
+  })());
 });
 
 self.addEventListener("notificationclick", (e) => {

@@ -1,0 +1,8 @@
+# Den private push-nøkkelen skal aldri inn i repoet (det er offentlig)
+push/.vapid-privat.json
+push/.dev.vars
+
+# Verktøy
+node_modules/
+.wrangler/
+.DS_Store
